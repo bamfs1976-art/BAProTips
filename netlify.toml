@@ -1,0 +1,53 @@
+# ======================================================================
+#  Booking Analytics Pro — Netlify Configuration
+#  Site: playerbookings | Account: 699abd878c460f85195a8ed5
+# ======================================================================
+
+[build]
+  command = "npm install"
+  publish = "."
+  functions = "netlify/functions"
+
+# Serve index.html at root (SPA fallback)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# ======================================================================
+#  Scheduled Functions
+# ======================================================================
+
+# Generate tips daily at 07:00 UTC (covers European morning fixtures)
+[functions."generate-tips-scheduled"]
+  schedule = "0 7 * * *"
+  timeout = 60
+
+# Settle tips daily at 23:30 UTC (after most European matches finish)
+[functions."settle-tips-scheduled"]
+  schedule = "30 23 * * *"
+  timeout = 60
+
+# ======================================================================
+#  Headers — Security & Caching
+# ======================================================================
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+# ======================================================================
+#  Environment Variables Required (set in Netlify UI):
+#
+#  SUPABASE_URL           = https://knodunjnsxelmpziupwk.supabase.co
+#  SUPABASE_SERVICE_KEY   = (service_role key from Supabase dashboard)
+#  API_FOOTBALL_KEY       = (your API-Football Pro key)
+#  ANTHROPIC_API_KEY      = (your Anthropic API key)
+# ======================================================================

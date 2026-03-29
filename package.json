@@ -1,0 +1,9 @@
+{
+  "name": "booking-analytics-pro",
+  "version": "3.0.0",
+  "private": true,
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "node-fetch": "^2.7.0"
+  }
+}

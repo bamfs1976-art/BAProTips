@@ -1,0 +1,17 @@
+{
+  "name": "Booking Analytics",
+  "short_name": "Bookings",
+  "description": "Player booking analytics powered by API-Football",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111118",
+  "theme_color": "#111118",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111118'/><rect x='30' y='15' width='18' height='28' rx='3' fill='%23FFD700'/><rect x='52' y='15' width='18' height='28' rx='3' fill='%23E53333'/><text x='50' y='75' text-anchor='middle' fill='white' font-size='16' font-family='system-ui' font-weight='bold'>BOOK</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
