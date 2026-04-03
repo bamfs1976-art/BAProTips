@@ -733,6 +733,24 @@ html[data-theme="light"] .nav-row::after{background:linear-gradient(to right,tra
 .home-live-label{font-size:11px;color:var(--text2)}
 .home-live-cta{font-size:10px;color:var(--green);font-weight:600;margin-left:auto}
 .home-league-group{background:var(--card);border-radius:var(--radius);margin:6px 16px 10px;overflow:hidden}
+.home-league-hdr .hlg-arrow{font-size:10px;color:var(--text3);transition:transform .2s;margin-left:auto}
+.home-league-group.collapsed .hlg-arrow{transform:rotate(-90deg)}
+.home-league-group.collapsed .home-league-body{display:none}
+.home-featured{margin:0 16px 12px}
+.home-featured-title{font-size:13px;font-weight:700;padding:0 0 6px;display:flex;align-items:center;gap:6px;color:var(--text2)}
+.home-feat-card{background:var(--card);border-radius:12px;padding:12px;margin-bottom:8px;cursor:pointer;transition:background .15s;border:1px solid var(--divider)}
+.home-feat-card:active{background:var(--card2)}
+.home-feat-teams{display:flex;align-items:center;justify-content:space-between}
+.home-feat-team{display:flex;flex-direction:column;align-items:center;width:80px;text-align:center}
+.home-feat-team img{width:30px;height:30px;margin-bottom:4px}
+.home-feat-team span{font-size:11px;font-weight:600}
+.home-feat-vs{font-size:14px;font-weight:800;color:var(--text3)}
+.home-feat-meta{display:flex;justify-content:center;gap:8px;margin-top:6px;font-size:10px;color:var(--text3)}
+.home-feat-live{color:var(--green);font-weight:700}
+.home-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:0 16px 10px}
+.home-summary-card{background:var(--card);border-radius:10px;padding:10px;text-align:center}
+.home-summary-card .sv{font-size:20px;font-weight:800}
+.home-summary-card .sl{font-size:10px;color:var(--text3);margin-top:2px}
 .home-league-hdr{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--divider)}
 .home-league-hdr img{width:22px;height:22px;object-fit:contain}
 .home-league-hdr .hlg-name{font-size:12px;font-weight:700;flex:1}
@@ -771,6 +789,9 @@ html[data-theme="light"] .home-filter-pill{background:var(--card);border-color:v
 html[data-theme="light"] .home-filter-pill.active{background:rgba(200,90,0,.08);color:var(--yellow);border-color:rgba(200,90,0,.2)}
 html[data-theme="light"] .home-live-banner{background:rgba(26,122,60,.04);border-color:rgba(26,122,60,.12)}
 html[data-theme="light"] .home-league-group{background:var(--card)}
+html[data-theme="light"] .home-feat-card{background:var(--card);border-color:var(--divider)}
+html[data-theme="light"] .home-feat-card:active{background:var(--card2)}
+html[data-theme="light"] .home-summary-card{background:var(--card)}
 html[data-theme="light"] .home-fixture:active{background:var(--card2)}
 html[data-theme="light"] .all-leagues-btn{background:linear-gradient(135deg,rgba(21,88,168,.04),rgba(200,90,0,.03));border-color:rgba(21,88,168,.12)}
 html[data-theme="light"] .all-leagues-msg .al-action{background:var(--card2);border-color:var(--divider);color:var(--yellow)}
@@ -2018,31 +2039,94 @@ function buildHomeFixtureRow(f){
   let statusLabel=isLive?(f.fixture.status.elapsed?f.fixture.status.elapsed+"'":st):isFin?'FT':st||'NS';
   return `<div class="home-fixture" onclick="openFixture(${f.fixture.id})"><div class="${timeCls}">${timeStr}</div><div class="home-fx-teams"><div class="home-fx-team"><img src="${f.teams.home.logo||''}" alt="" onerror="this.style.display='none'">${f.teams.home.name}</div><div class="home-fx-team"><img src="${f.teams.away.logo||''}" alt="" onerror="this.style.display='none'">${f.teams.away.name}</div></div>${scoreHtml}<div class="${statusCls}">${statusLabel}</div></div>`;
 }
+// Featured leagues get priority ordering and auto-expand
+const FEATURED_LEAGUE_IDS=new Set([39,140,135,78,61,2,3,1,4,9]);
+
+function buildFeaturedMatches(fixtures){
+  // Pick top 4 fixtures: live first, then biggest leagues, then soonest kick-off
+  const liveStatuses=['1H','2H','HT','ET','P','LIVE','BT'];
+  const scored=fixtures.map(f=>{
+    const isLive=liveStatuses.includes(f.fixture.status.short);
+    const isFeatured=FEATURED_LEAGUE_IDS.has(f.league.id);
+    const score=(isLive?1000:0)+(isFeatured?100:0)+(1000-new Date(f.fixture.date).getHours());
+    return{f,score,isLive};
+  }).sort((a,b)=>b.score-a.score).slice(0,4);
+  if(!scored.length) return '';
+
+  let h=`<div class="home-featured"><div class="home-featured-title">⭐ Featured Matches</div>`;
+  scored.forEach(({f,isLive})=>{
+    const time=isLive?(f.fixture.status.elapsed||'')+"'":stime(f.fixture.date);
+    const hasScore=isLive||['FT','AET','PEN'].includes(f.fixture.status.short);
+    h+=`<div class="home-feat-card" onclick="openFixture(${f.fixture.id})"><div class="home-feat-teams"><div class="home-feat-team"><img src="${f.teams.home.logo||''}" alt="" onerror="this.style.display='none'"><span>${f.teams.home.name}</span></div><div style="text-align:center">${hasScore?`<div style="font-size:20px;font-weight:800">${f.goals.home??0} - ${f.goals.away??0}</div>`:'<div class="home-feat-vs">VS</div>'}</div><div class="home-feat-team"><img src="${f.teams.away.logo||''}" alt="" onerror="this.style.display='none'"><span>${f.teams.away.name}</span></div></div><div class="home-feat-meta">${isLive?`<span class="home-feat-live">● LIVE ${time}</span>`:`<span>🕐 ${time}</span>`}<span><img src="${f.league.logo||''}" style="width:12px;height:12px;vertical-align:middle" onerror="this.style.display='none'"> ${f.league.name}</span></div></div>`;
+  });
+  h+=`</div>`;
+  return h;
+}
+
 function buildHomeLeagueGroups(fixtures,filter){
   const filtered=homeFilterFixtures(fixtures,filter);
   if(!filtered.length)return `<div class="empty" style="padding:30px 20px"><div class="ei">&#x26BD;</div><div class="et">No ${filter==='all'?'':filter+' '}matches</div></div>`;
+
+  // Group by league
   const byLeague={};const leagueOrder=[];
   filtered.forEach(f=>{
     const lid=f.league.id;
     if(!byLeague[lid]){byLeague[lid]={id:lid,name:f.league.name,logo:f.league.logo,country:f.league.country,flag:f.league.flag,matches:[]};leagueOrder.push(lid)}
     byLeague[lid].matches.push(f);
   });
-  let h='';
-  leagueOrder.forEach(lid=>{
+
+  // Sort: featured leagues first, then by match count
+  leagueOrder.sort((a,b)=>{
+    const af=FEATURED_LEAGUE_IDS.has(a)?1:0,bf=FEATURED_LEAGUE_IDS.has(b)?1:0;
+    if(af!==bf) return bf-af;
+    return byLeague[b].matches.length-byLeague[a].matches.length;
+  });
+
+  const leagueCount=leagueOrder.length;
+  const totalMatches=filtered.length;
+  const liveCount=filtered.filter(f=>['1H','2H','HT','ET','P','LIVE','BT'].includes(f.fixture.status.short)).length;
+  const finCount=filtered.filter(f=>['FT','AET','PEN'].includes(f.fixture.status.short)).length;
+
+  // Summary cards
+  let h=`<div class="home-summary"><div class="home-summary-card"><div class="sv">${totalMatches}</div><div class="sl">Matches</div></div><div class="home-summary-card"><div class="sv">${leagueCount}</div><div class="sl">Leagues</div></div><div class="home-summary-card"><div class="sv" style="color:${liveCount?'var(--green)':'var(--text3)'}">${liveCount||finCount}</div><div class="sl">${liveCount?'Live now':'Finished'}</div></div></div>`;
+
+  // Featured matches (only on 'all' filter, and only if >6 total fixtures)
+  if(filter==='all'&&totalMatches>6) h+=buildFeaturedMatches(filtered);
+
+  // Collapsed league sections
+  h+=`<div class="sec-title" style="padding-bottom:2px"><span class="dot" style="background:var(--cyan)"></span>All Leagues <span style="font-size:10px;color:var(--text3);margin-left:auto">${leagueCount} competitions</span></div>`;
+
+  leagueOrder.forEach((lid,i)=>{
     const lg=byLeague[lid];
-    h+=`<div class="home-league-group">`;
-    h+=`<div class="home-league-hdr">`;
+    // Auto-expand: featured leagues with live matches, or first 3 leagues
+    const hasLive=lg.matches.some(f=>['1H','2H','HT','ET','P','LIVE','BT'].includes(f.fixture.status.short));
+    const autoExpand=hasLive||i<3;
+    const nextKO=lg.matches.find(f=>!['FT','AET','PEN','1H','2H','HT','ET','P'].includes(f.fixture.status.short||''));
+    const nextTime=nextKO?stime(nextKO.fixture.date):'';
+    const liveInLeague=lg.matches.filter(f=>['1H','2H','HT','ET','P','LIVE','BT'].includes(f.fixture.status.short)).length;
+
+    h+=`<div class="home-league-group${autoExpand?'':' collapsed'}" id="hlg-${lid}">`;
+    h+=`<div class="home-league-hdr" onclick="toggleHomeLeague(${lid})" style="cursor:pointer">`;
     h+=`<img src="${lg.logo||''}" alt="" onerror="this.style.display='none'">`;
     if(lg.flag)h+=`<img src="${lg.flag}" alt="" style="width:16px;height:12px;border-radius:2px;object-fit:cover" onerror="this.style.display='none'">`;
     h+=`<span class="hlg-name">${lg.name}</span>`;
+    if(liveInLeague)h+=`<span style="font-size:10px;color:var(--green);font-weight:700">● ${liveInLeague} live</span>`;
+    else if(nextTime)h+=`<span style="font-size:10px;color:var(--text3)">Next: ${nextTime}</span>`;
     h+=`<span class="hlg-count">${lg.matches.length}</span>`;
+    h+=`<span class="hlg-arrow">▼</span>`;
     h+=`</div>`;
+    h+=`<div class="home-league-body">`;
     lg.matches.forEach(f=>{h+=buildHomeFixtureRow(f)});
-    h+=`</div>`;
+    h+=`</div></div>`;
   });
-  const leagueCount=leagueOrder.length;
-  h+=`<div class="home-total">${filtered.length} match${filtered.length!==1?'es':''} across ${leagueCount} league${leagueCount!==1?'s':''}</div>`;
+
+  h+=`<div class="home-total">${totalMatches} match${totalMatches!==1?'es':''} across ${leagueCount} league${leagueCount!==1?'s':''} · Tap a league to ${leagueOrder.length>3?'expand':'collapse'}</div>`;
   return h;
+}
+
+function toggleHomeLeague(lid){
+  const el=document.getElementById('hlg-'+lid);
+  if(el) el.classList.toggle('collapsed');
 }
 function applyHomeFilter(filter){
   _homeFilter=filter;
@@ -2078,7 +2162,6 @@ async function loadDash(){
     markLoaded('dashboard');
     let h=`<div class="pg-title">&#x26BD; Today's Football ${refreshBtn('dashboard')}${freshnessBadge('dashboard')}</div>`;
     h+=`<div class="home-date">${dayName}</div>`;
-    h+=`<div class="home-subtitle">${refreshBtn('dashboard')?'':''}Cross-league fixtures · tap any match for details</div>`;
 
     // Section 1: Live Now Banner
     if(liveFx.length){
