@@ -2696,7 +2696,7 @@ function renderSettings(){
   h+=`<div class="settings-section">${ssHdr('apikeys','&#x1F511;','API Keys')}<div class="settings-section-body ${ssBody('apikeys')}"><div style="padding:0 16px 14px"><div style="font-size:14px;font-weight:700;margin-bottom:6px">&#x1F511; API Key</div><div style="font-size:11px;color:var(--text3);margin-bottom:8px">API-Football Pro key from api-sports.io</div><input class="sinput" id="apikey-in" type="password" placeholder="x-apisports-key" value="${S.apiKey}"><div style="display:flex;align-items:center;gap:8px;margin-top:8px"><button class="btn-p" onclick="saveKey()">Save Key</button><button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px" onclick="document.getElementById('apikey-in').type=document.getElementById('apikey-in').type==='password'?'text':'password'">👁</button><span id="save-ok" style="font-size:11px;color:var(--green);display:none">✓ Saved</span></div><div style="display:flex;align-items:center;gap:5px;margin-top:8px"><span class="sdot" style="background:${S.apiKey?'var(--green)':'var(--red)'}"></span><span style="font-size:11px;color:var(--text2)">${S.apiKey?'Key configured':'No key set'}</span></div></div>`;
   // Tips & Intelligence
   const anKey=localStorage.getItem('anthropicKey')||'';
-  const tipPw=localStorage.getItem('tips_admin_pw')||'admin123';
+  const tipPw=localStorage.getItem('tips_admin_pw')||'Lesley65!';
   const anthCalls=JSON.parse(localStorage.getItem('anthropicCallLog')||'{}');
   const todayKey=new Date().toISOString().split('T')[0];
   const todayCalls=anthCalls[todayKey]||0;
@@ -3922,7 +3922,7 @@ async function shareAccaImage(type){
 function getTipStats(){try{return JSON.parse(localStorage.getItem('tipStats')||'null')}catch(e){return null}}
 function getDailyTips(){try{return JSON.parse(localStorage.getItem('dailyTips')||'[]')}catch(e){return[]}}
 function isTipsAdmin(){return sessionStorage.getItem('tips_admin')==='true'}
-function getTipAdminPw(){return localStorage.getItem('tips_admin_pw')||'admin123'}
+function getTipAdminPw(){return localStorage.getItem('tips_admin_pw')||'Lesley65!'}
 function getApiCallCount(){const log=JSON.parse(localStorage.getItem('apiCallLog')||'{}');const k=new Date().toISOString().split('T')[0];return log[k]||0}
 function incrApiCallCount(n=1){const log=JSON.parse(localStorage.getItem('apiCallLog')||'{}');const k=new Date().toISOString().split('T')[0];log[k]=(log[k]||0)+n;localStorage.setItem('apiCallLog',JSON.stringify(log))}
 function incrAnthCallCount(){const log=JSON.parse(localStorage.getItem('anthropicCallLog')||'{}');const k=new Date().toISOString().split('T')[0];log[k]=(log[k]||0)+1;localStorage.setItem('anthropicCallLog',JSON.stringify(log))}
@@ -4075,7 +4075,7 @@ function renderTipsAdmin(el){
   const anthCalls=anthLog[todayKey]||0;
   const tips=getDailyTips();
   const anKey=localStorage.getItem('anthropicKey')||'';
-  const isDefaultPw=getTipAdminPw()==='admin123';
+  const isDefaultPw=false; // Password has been set
 
   let h=`<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px 6px"><div class="pg-title" style="padding:0">💡 Tips Admin</div><button style="background:none;border:none;color:var(--yellow);font-size:12px;font-weight:600;cursor:pointer" onclick="sessionStorage.removeItem('tips_admin');loadTips()">Logout</button></div>`;
 
