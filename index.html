@@ -1826,54 +1826,54 @@ const UK_TV_LEAGUES=[
   {lid:848,rules:[{days:[4],ch:'TNT Sports 1',cls:'tnt'}]},
   // === LA LIGA (LaLigaTV + Premier Sports) ===
   {lid:140,rules:[
-    {days:[6],hours:[15,17,20],ch:'LaLigaTV',cls:'prem'},
-    {days:[0],hours:[13,15,17,20],ch:'LaLigaTV',cls:'prem'},
-    {days:[5],hours:[20],ch:'LaLigaTV',cls:'prem'},
-    {days:[1,2,3,4],ch:'LaLigaTV',cls:'prem'},
-    {ch:'Premier Sports',cls:'prem'},
+    {days:[6],hours:[13,15,17,20],ch:'LaLigaTV',cls:'prem'},
+    {days:[0],hours:[13,15,17,20],ch:'Premier Sports 2',cls:'prem'},
+    {days:[1],hours:[20],ch:'Premier Sports 1',cls:'prem'},
+    {days:[5],hours:[20],ch:'Premier Sports 2',cls:'prem'},
+    {ch:'LaLigaTV',cls:'prem'},
   ]},
-  // === SERIE A (TNT Sports) ===
+  // === SERIE A (TNT Sports + DAZN) ===
   {lid:135,rules:[
-    {days:[6],hours:[14,17,19],ch:'TNT Sports',cls:'tnt'},
-    {days:[0],hours:[11,14,17,19],ch:'TNT Sports',cls:'tnt'},
-    {days:[1,2,3,5],ch:'TNT Sports',cls:'tnt'},
-    {ch:'TNT Sports',cls:'tnt'},
+    {days:[0],hours:[19],ch:'TNT Sports 1',cls:'tnt',note:'Big game'},
+    {days:[6],hours:[14,17,19],ch:'DAZN',cls:'c4'},
+    {days:[0],hours:[14,17],ch:'DAZN',cls:'c4'},
+    {days:[1],hours:[17,19],ch:'TNT Sports 1',cls:'tnt'},
+    {days:[5],hours:[19],ch:'DAZN',cls:'c4'},
+    {ch:'DAZN',cls:'c4'},
   ]},
-  // === BUNDESLIGA (Sky Sports) ===
+  // === BUNDESLIGA (Sky Sports + BBC iPlayer for Fri) ===
   {lid:78,rules:[
-    {days:[6],hours:[14,17],ch:'Sky Sports',cls:'sky'},
-    {days:[0],hours:[14,17],ch:'Sky Sports',cls:'sky'},
-    {days:[5],hours:[19,20],ch:'Sky Sports',cls:'sky'},
-    {ch:'Sky Sports',cls:'sky'},
+    {days:[5],hours:[19],ch:'BBC iPlayer',cls:'bbc',free:true,note:'Free on BBC'},
+    {days:[6],hours:[14,17],ch:'Sky Sports Football',cls:'sky'},
+    {days:[0],hours:[14,16],ch:'Sky Sports Football',cls:'sky'},
+    {ch:'Sky Sports Football',cls:'sky'},
   ]},
-  // === LIGUE 1 (TNT Sports + Amazon Prime) ===
+  // === LIGUE 1 (Amazon Prime + TNT Sports) ===
   {lid:61,rules:[
-    {days:[5],hours:[19,20],ch:'Amazon Prime',cls:'prime'},
-    {days:[6],hours:[16,20],ch:'TNT Sports',cls:'tnt'},
-    {days:[0],hours:[14,16,19,20],ch:'TNT Sports',cls:'tnt'},
-    {days:[2,3],ch:'Amazon Prime',cls:'prime'},
-    {ch:'TNT Sports',cls:'tnt'},
+    {days:[5],hours:[19],ch:'Amazon Prime',cls:'prime'},
+    {days:[0],hours:[19],ch:'Amazon Prime',cls:'prime'},
+    {days:[6],hours:[18,20],ch:'Amazon Prime',cls:'prime'},
+    {ch:'Amazon Prime',cls:'prime'},
   ]},
   // === SCOTTISH PREMIERSHIP (Sky Sports) ===
   {lid:179,rules:[
     {days:[6],hours:[12,17],ch:'Sky Sports',cls:'sky'},
-    {days:[0],hours:[12,14],ch:'Sky Sports',cls:'sky'},
+    {days:[0],hours:[12,14,16],ch:'Sky Sports',cls:'sky'},
     {days:[5],hours:[19],ch:'Sky Sports',cls:'sky'},
     {days:[2,3],ch:'Sky Sports',cls:'sky'},
     {ch:'Sky Sports',cls:'sky'},
   ]},
   // === SCOTTISH CHAMPIONSHIP ===
-  {lid:180,rules:[{ch:'BBC Alba',cls:'bbc',free:true}]},
-  // === EREDIVISIE (Viaplay) ===
-  {lid:88,rules:[{ch:'Viaplay',cls:'c4'}]},
-  // === EERSTE DIVISIE ===
-  {lid:89,rules:[{ch:'Viaplay',cls:'c4'}]},
-  // === BELGIAN PRO LEAGUE ===
-  {lid:144,rules:[{ch:'Premier Sports 2',cls:'prem'}]},
-  // === TURKISH SUPER LIG ===
-  {lid:203,rules:[{ch:'beIN Sports',cls:'c4'}]},
-  // === ARGENTINE PRIMERA ===
-  {lid:128,rules:[{ch:'Premier Sports 2',cls:'prem'}]},
+  {lid:180,rules:[
+    {days:[5],hours:[19],ch:'BBC Scotland',cls:'bbc',free:true},
+    {ch:'BBC Scotland',cls:'bbc',free:true}
+  ]},
+  // === EREDIVISIE (TrillerTV+ / Premier Player) ===
+  {lid:88,rules:[{ch:'TrillerTV+',cls:'c4'}]},
+  // === BELGIAN PRO LEAGUE (DAZN) ===
+  {lid:144,rules:[{ch:'DAZN',cls:'c4'}]},
+  // === ARGENTINE PRIMERA (Premier Sports) ===
+  {lid:128,rules:[{ch:'Premier Sports 1',cls:'prem'}]},
   // === A-LEAGUE (TNT Sports) ===
   {lid:188,rules:[{ch:'TNT Sports',cls:'tnt'}]},
   // === WORLD CUP ===
@@ -1905,16 +1905,20 @@ const UK_TV_LEAGUES=[
   {lid:13,rules:[{ch:'BBC iPlayer',cls:'bbc',free:true}]},
   // === COPA SUDAMERICANA ===
   {lid:14,rules:[{ch:'BBC iPlayer',cls:'bbc',free:true}]},
-  // === SAUDI PRO LEAGUE ===
-  {lid:307,rules:[{ch:'DAZN',cls:'c4'}]},
   // === MLS ===
   {lid:253,rules:[{ch:'Apple TV',cls:'c4'}]},
   // === FIFA CLUB WORLD CUP ===
   {lid:15,rules:[{ch:'DAZN',cls:'c4'}]},
-  // === LIGA MX ===
-  {lid:262,rules:[{ch:'Premier Sports 2',cls:'prem'}]},
   // === BRAZILIAN SERIE A ===
-  {lid:71,rules:[{ch:'Premier Sports 2',cls:'prem'}]},
+  {lid:71,rules:[
+    {days:[6],hours:[22],ch:'Premier Sports 1',cls:'prem'},
+    {days:[0],hours:[22,23],ch:'Premier Sports 2',cls:'prem'},
+    {ch:'Premier Sports 2',cls:'prem'},
+  ]},
+  // === LEAGUE OF IRELAND ===
+  {lid:357,rules:[{ch:'LOITV',cls:'c4'}]},
+  // === NATIONAL LEAGUE ===
+  // National League not in LEAGUES array but if it were, id would be needed
 ];
 
 function getUKChannel(fixture,leagueId){
@@ -1955,7 +1959,7 @@ async function buildTVGuide(){
 
   // Fetch fixtures in 2-week batches across the date range using date param
   // Priority leagues fetched with more depth; others get fewer fixtures
-  const priorityLeagues=[39,40,41,42,45,48,2,3,848,179,180,135,78,61,140,88,89,144,203,128,188,1,4,5,34,11,9,307,253,528,15,262,71,14];
+  const priorityLeagues=[39,40,41,42,45,48,2,3,848,179,180,135,78,61,140,88,144,128,188,357,1,4,5,34,11,9,253,528,15,71,14,13];
   const rangeStart=now>TV_START?now:TV_START;
 
   // Fetch by date windows: today + 2 weeks, then month-by-month summaries
