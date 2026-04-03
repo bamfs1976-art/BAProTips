@@ -846,6 +846,34 @@ html[data-theme="light"] .all-leagues-msg .al-action{background:var(--card2);bor
 // ======================================================================
 const S={tab:'dashboard',apiKey:localStorage.getItem('ba_key')||'',league:+(localStorage.getItem('ba_lg'))||39,season:+(localStorage.getItem('ba_sn'))||2025,cache:{},refCache:{},lastLoaded:{},compareSlot:null};
 
+// ====== API Budget System ======
+const API_DAILY_BUDGET = 500;
+function canMakeApiCall(){return getApiCallCount()<API_DAILY_BUDGET}
+
+// ====== Eco Mode ======
+function isEcoMode(){return localStorage.getItem('ba_eco_mode')==='true'}
+function setEcoMode(v){localStorage.setItem('ba_eco_mode',v?'true':'false');if(S.tab==='settings')renderSettings();updateEcoBadge()}
+function updateEcoBadge(){const badge=document.getElementById('eco-badge');if(badge)badge.style.display=isEcoMode()?'inline':'none'}
+
+// ====== localStorage Cache Persistence ======
+function loadCacheFromStorage(){
+  try{
+    const stored=JSON.parse(localStorage.getItem('apiCache')||'{}');
+    const now=Date.now();
+    for(const[url,data]of Object.entries(stored)){
+      if(now-data.t<86400000) S.cache[url]=data;
+    }
+  }catch(e){}
+}
+function saveCacheToStorage(){
+  try{
+    const entries=Object.entries(S.cache);
+    const trimmed=entries.slice(-200);
+    localStorage.setItem('apiCache',JSON.stringify(Object.fromEntries(trimmed)));
+  }catch(e){}
+}
+loadCacheFromStorage();
+
 const LEAGUES=[
   {id:39,name:'Premier League',cc:'England',flag:'GB'},
   {id:140,name:'La Liga',cc:'Spain',flag:'ES'},
@@ -1068,6 +1096,7 @@ async function api(ep,params={},ttl=3600){
   const url=`https://v3.football.api-sports.io${ep}?${qs}`;
   const now=Date.now();
   if(S.cache[url]&&(now-S.cache[url].t)<ttl*1000) return S.cache[url].d;
+  if(!canMakeApiCall()) throw new Error('Daily API budget reached ('+API_DAILY_BUDGET+' calls). Resets at midnight.');
   const r=await fetch(url,{headers:{'x-apisports-key':S.apiKey,'Accept':'application/json'}});
   if(r.status===429) throw new Error('Rate limit');
   if(r.status===401||r.status===403) throw new Error('Invalid API key');
@@ -1075,6 +1104,8 @@ async function api(ep,params={},ttl=3600){
   const j=await r.json();
   const d=j.response||[];
   S.cache[url]={d,t:now};
+  incrApiCallCount();
+  saveCacheToStorage();
   return d;
 }
 
@@ -1131,7 +1162,7 @@ function toggleFavLeague(id){
 function isFavLeague(id){return getFavLeagues().includes(id)}
 
 // ====== FIX 7: Settings Sections ======
-let settingsSections={appearance:true,apikeys:true,cloudsync:false,defleague:false,datacache:false,about:false};
+let settingsSections={appearance:true,apikeys:true,apiusage:true,ecomode:false,cloudsync:false,defleague:false,datacache:false,about:false};
 function toggleSettingsSection(id){
   settingsSections[id]=!settingsSections[id];
   renderSettings();
@@ -1176,7 +1207,7 @@ function showTrackSuccess(btn){
 async function buildDailyBriefing(){
   try{
     const today=new Date().toISOString().split('T')[0];
-    const fx=await api('/fixtures',{league:S.league,season:S.season,date:today},300).catch(()=>[]);
+    const fx=await api('/fixtures',{league:S.league,season:S.season,date:today},1800).catch(()=>[]);
     if(!fx.length) return '';
     let strictRefs=0,watchedPlaying=0;
     const wp=typeof getWatchPlayers==='function'?getWatchPlayers():[];
@@ -1339,10 +1370,10 @@ function getPlayerStreakBadge(player){
 async function buildTodayPanel(){
   try{
     const today=new Date().toISOString().split('T')[0];
-    const fx=await api('/fixtures',{league:S.league,season:S.season,date:today},300).catch(()=>[]);
+    const fx=await api('/fixtures',{league:S.league,season:S.season,date:today},1800).catch(()=>[]);
     if(!fx.length){
       // Find next matchday
-      const nextFx=await api('/fixtures',{league:S.league,season:S.season,next:1},300).catch(()=>[]);
+      const nextFx=await api('/fixtures',{league:S.league,season:S.season,next:1},1800).catch(()=>[]);
       if(nextFx.length){
         const nextDate=sdate(nextFx[0].fixture.date);
         return `<div class="today-panel"><div class="tp-hdr">&#x1F4C5; No matches today</div><div style="font-size:11px;color:var(--text3)">Next matchday: ${nextDate}</div></div>`;
@@ -1476,11 +1507,14 @@ function sectionForTab(tab){return SECTIONS.find(s=>s.tabs.includes(tab))||SECTI
 let activeSection=sectionForTab(S.tab).id;
 
 function buildNav(){
-  // Top section bar
+  // Top section bar with API counter badge
   const secBar=document.getElementById('sec-nav');
+  const _aUsed=getApiCallCount();
+  const _aPct=Math.round(_aUsed/API_DAILY_BUDGET*100);
+  const _aCol=_aPct>80?'var(--red)':_aPct>50?'var(--orange)':'var(--green)';
   secBar.innerHTML=SECTIONS.map(s=>
     `<button class="sec-nav-btn${s.id===activeSection?' active':''}" data-s="${s.id}" onclick="switchSection('${s.id}')" aria-label="${s.label} section">${s.label}</button>`
-  ).join('');
+  ).join('')+`<span id="eco-badge" style="display:${isEcoMode()?'inline':'none'};font-size:12px;padding:4px 6px;flex-shrink:0" title="Eco Mode ON">&#x1F33F;</span><span style="font-size:9px;padding:4px 8px;color:${_aCol};font-weight:700;flex-shrink:0;white-space:nowrap" title="API calls today">${_aUsed}/${API_DAILY_BUDGET}</span>`;
   // Bottom tab row — only tabs for active section
   const sec=SECTIONS.find(s=>s.id===activeSection)||SECTIONS[0];
   const visibleTabs=TABS.filter(t=>sec.tabs.includes(t.id));
@@ -1648,8 +1682,8 @@ async function predictCorners(f){
 
     // Get last 8 home fixtures for home team + last 8 away fixtures for away team
     const [homeFx,awayFx]=await Promise.all([
-      api('/fixtures',{team:hid,season:S.season,league:S.league,last:12},3600).catch(()=>[]),
-      api('/fixtures',{team:aid,season:S.season,league:S.league,last:12},3600).catch(()=>[])
+      api('/fixtures',{team:hid,season:S.season,league:S.league,last:12},14400).catch(()=>[]),
+      api('/fixtures',{team:aid,season:S.season,league:S.league,last:12},14400).catch(()=>[])
     ]);
 
     // Process home team's home matches
@@ -1934,46 +1968,33 @@ let tvMonthFilter=null; // null = show all, or 'Mar','Apr','May','Jun','Jul'
 const TV_MONTHS=['Mar','Apr','May','Jun','Jul'];
 
 async function buildTVGuide(){
+  if(isEcoMode()) return '';
   const tvLeagueIds=UK_TV_LEAGUES.map(t=>t.lid);
   const now=new Date();
   const allFixtures=[];
-
-  // Fetch fixtures in 2-week batches across the date range using date param
-  // Priority leagues fetched with more depth; others get fewer fixtures
-  const priorityLeagues=[39,40,41,42,45,48,2,3,848,179,180,135,78,61,140,88,144,128,188,1,4,5,34,11,9,253,528,15,71,14,13];
   const rangeStart=now>TV_START?now:TV_START;
 
-  // Fetch by date windows: today + 2 weeks, then month-by-month summaries
-  // For API efficiency, fetch next:20 for priority leagues (covers ~2 months of fixtures)
-  for(const lid of priorityLeagues){
-    if(!tvLeagueIds.includes(lid)) continue;
-    try{
-      // Fetch large batch — API returns chronologically, we filter by our date range
-      const fx=await api('/fixtures',{league:lid,season:S.season,next:30},3600);
-      fx.forEach(f=>{
-        const d=new Date(f.fixture.date);
-        if(d<rangeStart||d>TV_END) return;
-        const tv=getUKChannel(f,lid);
-        if(tv&&tv.ch) allFixtures.push({f,tv,lid,date:d});
-      });
-    }catch(e){}
+  // Reuse homepage fixtures if available, otherwise fetch by date (max 7 calls instead of ~30)
+  const dayDates=[];
+  for(let i=0;i<7;i++){const d=new Date(now);d.setDate(d.getDate()+i);dayDates.push(d.toISOString().split('T')[0])}
+
+  // Day 0: reuse homepage data if available
+  let day0Fx=window._homeDashFixtures||[];
+  if(!day0Fx.length){try{day0Fx=await api('/fixtures',{date:dayDates[0]},1800)}catch(e){day0Fx=[]}}
+  const allRawFx=[day0Fx];
+  // Days 1-6: one call per day
+  for(let i=1;i<dayDates.length;i++){
+    try{const fx=await api('/fixtures',{date:dayDates[i]},3600);allRawFx.push(fx)}catch(e){allRawFx.push([])}
   }
 
-  // Also fetch for summer tournaments (World Cup, Euros, Copa America) by date range
-  const summerTournaments=[1,4,9,15];
-  for(const lid of summerTournaments){
-    if(priorityLeagues.includes(lid)) continue;
-    if(!tvLeagueIds.includes(lid)) continue;
-    try{
-      const fx=await api('/fixtures',{league:lid,season:S.season,next:30},3600);
-      fx.forEach(f=>{
-        const d=new Date(f.fixture.date);
-        if(d<rangeStart||d>TV_END) return;
-        const tv=getUKChannel(f,lid);
-        if(tv&&tv.ch) allFixtures.push({f,tv,lid,date:d});
-      });
-    }catch(e){}
-  }
+  allRawFx.flat().forEach(f=>{
+    const d=new Date(f.fixture.date);
+    if(d<rangeStart||d>TV_END) return;
+    const lid=f.league?.id;
+    if(!tvLeagueIds.includes(lid)) return;
+    const tv=getUKChannel(f,lid);
+    if(tv&&tv.ch) allFixtures.push({f,tv,lid,date:d});
+  });
 
   allFixtures.sort((a,b)=>a.date-b.date);
   if(!allFixtures.length) return '';
@@ -2241,8 +2262,8 @@ async function loadDash(){
   try{
     // Fetch live matches (all leagues) and today's fixtures (all leagues) in parallel
     const [liveFx,todayFx]=await Promise.all([
-      api('/fixtures',{live:'all'},30).catch(()=>[]),
-      api('/fixtures',{date:dateStr},300).catch(()=>[])
+      api('/fixtures',{live:'all'},60).catch(()=>[]),
+      api('/fixtures',{date:dateStr},1800).catch(()=>[])
     ]);
 
     let useFx=todayFx;
@@ -2251,7 +2272,7 @@ async function loadDash(){
     if(!todayFx.length){
       const tomorrow=new Date(today);tomorrow.setDate(tomorrow.getDate()+1);
       const tomStr=tomorrow.toISOString().split('T')[0];
-      try{useFx=await api('/fixtures',{date:tomStr},300);dateLabel='Tomorrow'}catch(e){useFx=[]}
+      try{useFx=await api('/fixtures',{date:tomStr},1800);dateLabel='Tomorrow'}catch(e){useFx=[]}
     }
     window._homeDashFixtures=useFx;
     _homeFilter='all';
@@ -2325,10 +2346,10 @@ async function loadResults(){
     if(S.league===0){
       // Date-based: fetch last 3 days of finished fixtures across all leagues
       const days=[];for(let i=0;i<3;i++){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().split('T')[0])}
-      const results=await Promise.all(days.map(d=>api('/fixtures',{date:d,status:'FT-AET-PEN'},300).catch(()=>[])));
+      const results=await Promise.all(days.map(d=>api('/fixtures',{date:d,status:'FT-AET-PEN'},3600).catch(()=>[])));
       fx=results.flat();
     }else{
-      fx=await api('/fixtures',{league:S.league,season:S.season,last:20},300);
+      fx=await api('/fixtures',{league:S.league,season:S.season,last:20},3600);
     }
     markLoaded('results');
     let h=`<div class="pg-title">&#x1F4CB; Results ${refreshBtn('results')}${freshnessBadge('results')}</div>${leagueHdr()}${lpicker()}<div style="padding:4px 0">${spicker()}</div>`;
@@ -2358,21 +2379,29 @@ async function loadUpcoming(){
     let fx=[];
     if(S.league===0){
       const days=[];for(let i=0;i<3;i++){const d=new Date();d.setDate(d.getDate()+i);days.push(d.toISOString().split('T')[0])}
-      const results=await Promise.all(days.map(d=>api('/fixtures',{date:d,status:'NS-TBD-1H-2H-HT'},300).catch(()=>[])));
+      const results=await Promise.all(days.map(d=>api('/fixtures',{date:d,status:'NS-TBD-1H-2H-HT'},3600).catch(()=>[])));
       fx=results.flat().filter(f=>!['FT','AET','PEN'].includes(f.fixture.status.short));
     }else{
-      fx=await api('/fixtures',{league:S.league,season:S.season,next:15},300);
+      fx=await api('/fixtures',{league:S.league,season:S.season,next:15},3600);
     }
     markLoaded('upcoming');
     let h=`<div class="pg-title">&#x1F4C5; Upcoming ${refreshBtn('upcoming')}${freshnessBadge('upcoming')}</div>${leagueHdr()}${lpicker()}<div style="padding:4px 0">${spicker()}</div>`;
     if(S.league===0&&fx.length){h+=buildHomeLeagueGroups(fx,'upcoming');el.innerHTML=h;return}
     if(!fx.length){h+=`<div class="empty"><div class="ei">&#x1F4C5;</div><div class="et">No upcoming fixtures</div></div>`;el.innerHTML=h;return}
 
-    for(const f of fx){
+    const UPCOMING_DETAIL_LIMIT=isEcoMode()?3:5;
+    for(let _fi=0;_fi<fx.length;_fi++){
+      const f=fx[_fi];
+      const showDetails=_fi<UPCOMING_DETAIL_LIMIT;
       const matchRisk=calcMatchRisk(f);
       h+=`<div class="fcard" onclick="openFixture(${f.fixture.id})">`;
       h+=`<div class="fhdr"><span class="fst" style="color:var(--blue);background:rgba(102,153,255,.1)">${f.fixture.status.short||'NS'}</span><span style="font-size:10px;color:var(--text3)">${stime(f.fixture.date)} ${sdate(f.fixture.date)}</span>${riskRingSVG(matchRisk,32)}</div>`;
       h+=`<div class="fteams"><div class="fteam"><img src="${f.teams.home.logo||''}" alt="" onerror="this.style.display='none'"><br><span class="ftn">${f.teams.home.name}</span></div><div style="text-align:center;font-size:12px;font-weight:700;color:var(--text3)">VS</div><div class="fteam"><img src="${f.teams.away.logo||''}" alt="" onerror="this.style.display='none'"><br><span class="ftn">${f.teams.away.name}</span></div></div>`;
+
+      if(!showDetails){
+        h+=`<div style="text-align:center;font-size:10px;color:var(--text3);padding:6px 0">Tap for full details</div></div>`;
+        continue;
+      }
 
       // Referee
       if(f.fixture.referee){
@@ -2435,7 +2464,7 @@ async function loadUpcoming(){
 
       // Injuries
       try{
-        const inj=await api('/injuries',{fixture:f.fixture.id},3600);
+        const inj=await api('/injuries',{fixture:f.fixture.id},14400);
         if(inj.length){
           h+=`<div style="margin-top:6px;display:flex;flex-wrap:wrap">`;
           inj.slice(0,8).forEach(i=>{
@@ -2464,7 +2493,7 @@ async function loadStandings(){
   if(S.league===0){el.innerHTML=`<div class="pg-title">&#x1F3C6; Standings</div>${leagueHdr()}${lpicker()}<div class="all-leagues-msg"><div class="al-icon">&#x1F3C6;</div><div class="al-text">Select a specific league for detailed standings</div><div class="al-action" onclick="openLeaguePicker()">Choose League</div></div>`;return}
   el.innerHTML=`<div class="pg-title">&#x1F3C6; Standings ${refreshBtn('standings')}${freshnessBadge('standings')}</div>${leagueHdr()}${lpicker()}${skeleton('table')}`;
   try{
-    const data=await api('/standings',{league:S.league,season:S.season},1800);
+    const data=await api('/standings',{league:S.league,season:S.season},7200);
     markLoaded('standings');
     if(!data.length||!data[0].league?.standings?.length){el.innerHTML=`<div class="pg-title">&#x1F3C6; Standings ${refreshBtn('standings')}</div>${leagueHdr()}${lpicker()}<div class="empty"><div class="ei">&#x1F3C6;</div><div class="et">No standings data</div></div>`;return}
     const groups=data[0].league.standings;
@@ -2501,14 +2530,15 @@ async function loadReferees(){
   if(S.league===0){el.innerHTML=`<div class="pg-title">&#x1F3C1; Ref Tracker</div>${leagueHdr()}${lpicker()}<div class="all-leagues-msg"><div class="al-icon">&#x1F3C1;</div><div class="al-text">Select a specific league for referee analytics</div><div class="al-action" onclick="openLeaguePicker()">Choose League</div></div>`;return}
   el.innerHTML=`<div class="pg-title">&#x1F3C1; Ref Tracker ${refreshBtn('referees')}${freshnessBadge('referees')}</div>${leagueHdr()}${lpicker()}${skeleton('list')}`;
   try{
-    const fx=await api('/fixtures',{league:S.league,season:S.season,status:'FT-AET-PEN'},1800);
+    const fx=await api('/fixtures',{league:S.league,season:S.season,status:'FT-AET-PEN'},7200);
     if(!fx.length){el.innerHTML=`<div class="pg-title">&#x1F3C1; Ref Tracker ${refreshBtn('referees')}</div>${leagueHdr()}${lpicker()}<div class="empty"><div class="ei">&#x1F4C5;</div><div class="et">No completed fixtures</div></div>`;return}
     const refMap={};
     fx.forEach(f=>{const rn=f.fixture.referee;if(!rn)return;const name=rn.split(',')[0].trim();if(!refMap[name])refMap[name]={name,matches:0,fixtures:[],yellows:0,reds:0,secondYellows:0,pens:0,pensMissed:0,fouls:0,corners:0,homeCards:0,awayCards:0,firstHalfCards:0,secondHalfCards:0,minuteBuckets:{'1-15':0,'16-30':0,'31-45':0,'46-60':0,'61-75':0,'76-90':0,'90+':0},bigMatches:[],cardEvents:[]};refMap[name].matches++;refMap[name].fixtures.push(f)});
     const allRefs=Object.values(refMap).sort((a,b)=>b.matches-a.matches);
     const topRefs=allRefs.slice(0,20);
+    const REF_FIXTURE_LIMIT=isEcoMode()?8:15;
     for(const ref of topRefs){
-      const sample=ref.fixtures.slice(0,15);
+      const sample=ref.fixtures.slice(0,REF_FIXTURE_LIMIT);
       for(const f of sample){
         try{
           const [events,stats]=await Promise.all([api('/fixtures/events',{fixture:f.fixture.id},86400),api('/fixtures/statistics',{fixture:f.fixture.id},86400).catch(()=>[])]);
@@ -2699,7 +2729,7 @@ async function loadPredictions(){
   if(S.league===0){el.innerHTML=`<div class="pg-title">&#x1F52E; Predictions</div>${leagueHdr()}${lpicker()}<div class="all-leagues-msg"><div class="al-icon">&#x1F52E;</div><div class="al-text">Select a specific league for detailed predictions</div><div class="al-action" onclick="openLeaguePicker()">Choose League</div></div>`;return}
   el.innerHTML=`<div class="pg-title">&#x1F52E; Predictions ${refreshBtn('predictions')}${freshnessBadge('predictions')}</div>${leagueHdr()}${lpicker()}${skeleton('cards')}`;
   try{
-    const fx=await api('/fixtures',{league:S.league,season:S.season,next:10},300);
+    const fx=await api('/fixtures',{league:S.league,season:S.season,next:10},3600);
     if(!fx.length){el.innerHTML=`<div class="pg-title">🔮 Predictions</div>${leagueHdr()}${lpicker()}<div class="empty"><div class="ei">🔮</div><div class="et">No upcoming fixtures</div></div>`;return}
     const [yl]=await Promise.all([api('/players/topyellowcards',{league:S.league,season:S.season},43200)]);
     const players=yl.map(toP).filter(Boolean);
@@ -2735,7 +2765,7 @@ async function loadPredictions(){
 
       // Injuries count
       let injCount=0;
-      try{const inj=await api('/injuries',{fixture:f.fixture.id},3600);injCount=inj.length}catch(e){}
+      try{const inj=await api('/injuries',{fixture:f.fixture.id},14400);injCount=inj.length}catch(e){}
 
       const adjCards=Math.max(1.5,predCards*(0.7+compFactor*0.3)*calMult);
 
@@ -2878,7 +2908,7 @@ async function loadLive(){
   async function refresh(){
     try{
       const liveParams=S.league===0?{live:'all'}:{live:'all',league:S.league};
-      const fx=await api('/fixtures',liveParams,15);
+      const fx=await api('/fixtures',liveParams,30);
       let h=`<div class="pg-title">&#x1F4E1; Live Matches</div>${leagueHdr()}${lpicker()}`;
       if(!fx.length){h+=`<div class="empty"><div class="ei">📡</div><div class="et">No Live Matches</div><div class="es">Auto-refreshes every 30s</div></div>`;el.innerHTML=h;return}
       h+=`<div style="font-size:10px;color:var(--text3);padding:4px 20px">${fx.length} live · auto-refresh 30s</div>`;
@@ -2893,7 +2923,7 @@ async function loadLive(){
 
         // Live match stats
         try{
-          const ms=await api('/fixtures/statistics',{fixture:f.fixture.id},15);
+          const ms=await api('/fixtures/statistics',{fixture:f.fixture.id},30);
           if(ms.length===2){
             const getStat=(team,type)=>{const s=team.statistics?.find(s=>s.type===type);return s?s.value:0};
             const stats=['Ball Possession','Shots on Goal','Total Shots','Corner Kicks','Fouls','Yellow Cards','Red Cards','Offsides','Goalkeeper Saves'];
@@ -2912,7 +2942,7 @@ async function loadLive(){
 
         // Card events
         try{
-          const ev=await api('/fixtures/events',{fixture:f.fixture.id,type:'Card'},15);
+          const ev=await api('/fixtures/events',{fixture:f.fixture.id,type:'Card'},30);
           if(ev.length){
             h+=`<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--divider)">`;
             ev.sort((a,b)=>(a.time.elapsed||0)-(b.time.elapsed||0)).forEach(c=>{
@@ -2950,7 +2980,7 @@ async function loadLive(){
 
         // Feature 7: Match intensity score
         try{
-          const ms2=await api('/fixtures/statistics',{fixture:f.fixture.id},15);
+          const ms2=await api('/fixtures/statistics',{fixture:f.fixture.id},30);
           if(ms2.length===2){
             const getSt=(team,type)=>{const s=team.statistics?.find(s=>s.type===type);return parseInt(String(s?.value||0).replace('%',''))||0};
             const totalFouls=getSt(ms2[0],'Fouls')+getSt(ms2[1],'Fouls');
@@ -2968,8 +2998,8 @@ async function loadLive(){
 
         // Booking imminent + Feature 7: Live booking probability
         try{
-          const ps=await api('/fixtures/players',{fixture:f.fixture.id},30);
-          const cardEv=await api('/fixtures/events',{fixture:f.fixture.id,type:'Card'},15);
+          const ps=await api('/fixtures/players',{fixture:f.fixture.id},60);
+          const cardEv=await api('/fixtures/events',{fixture:f.fixture.id,type:'Card'},30);
           const bookedIds=new Set(cardEv.map(e=>e.player.id));
           let refStrict2=0.5;
           if(f.fixture.referee){const rn=f.fixture.referee.split(',')[0].trim();const rs=S.refCache[rn];if(rs)refStrict2=Math.min(rs.cpm/8,1)}
@@ -3063,8 +3093,18 @@ function renderSettings(){
   });
   h+=`<div style="text-align:center;padding:8px 0"><button style="background:none;border:none;color:var(--yellow);font-size:11px;font-weight:600;cursor:pointer" onclick="openLeaguePicker()">View all ${LEAGUES.length} competitions &#x2192;</button></div></div></div></div>`;
 
+  // API Usage section (prominent)
+  const _apiUsed=getApiCallCount();
+  const _apiPct=Math.min(100,Math.round(_apiUsed/API_DAILY_BUDGET*100));
+  const _apiCol=_apiPct>80?'var(--red)':_apiPct>50?'var(--orange)':'var(--green)';
+  h+=`<div class="settings-section">${ssHdr('apiusage','&#x1F4CA;','API Usage Today')}<div class="settings-section-body ${ssBody('apiusage')}" style="padding:12px 16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><span style="font-size:24px;font-weight:800;color:${_apiCol}">${_apiUsed}</span><span style="font-size:12px;color:var(--text3)">/ ${API_DAILY_BUDGET} daily budget</span></div><div style="height:8px;background:var(--card2);border-radius:4px;overflow:hidden;margin-bottom:8px"><div style="height:100%;width:${_apiPct}%;background:${_apiCol};border-radius:4px;transition:width .3s"></div></div><div style="font-size:10px;color:var(--text3)">${_apiPct}% used &middot; Resets at midnight &middot; Cache entries: ${Object.keys(S.cache).length}</div></div></div>`;
+
+  // Eco Mode toggle
+  const _eco=isEcoMode();
+  h+=`<div class="settings-section">${ssHdr('ecomode','&#x1F33F;','Eco Mode')}<div class="settings-section-body ${ssBody('ecomode')}" style="padding:12px 16px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px;font-weight:600">${_eco?'Eco Mode ON':'Eco Mode OFF'}</span><button class="btn-p btn-pop" style="font-size:11px;padding:6px 16px;${_eco?'background:var(--green)':''}" onclick="setEcoMode(${!_eco})">${_eco?'Disable':'Enable'}</button></div><div style="font-size:10px;color:var(--text3)">Reduces API calls by ~50%: fewer fixture details, smaller league scans, TV guide disabled, shorter loops.</div></div></div>`;
+
   // Data & Cache section
-  h+=`<div class="settings-section">${ssHdr('datacache','&#x1F4BE;','Data & Cache')}<div class="settings-section-body ${ssBody('datacache')}"><div style="padding:0 16px 14px"><div style="font-size:11px;color:var(--text3);margin-bottom:8px">Stats: 12h &middot; Fixtures: 5min &middot; Live: 15s &middot; Standings: 30min</div><button class="btn-pop" style="background:none;border:none;color:var(--orange);font-size:12px;font-weight:600;cursor:pointer" onclick="S.cache={};S.refCache={};alert('Cache cleared')">&#x1F504; Clear Cache</button></div></div></div>`;
+  h+=`<div class="settings-section">${ssHdr('datacache','&#x1F4BE;','Data & Cache')}<div class="settings-section-body ${ssBody('datacache')}"><div style="padding:0 16px 14px"><div style="font-size:11px;color:var(--text3);margin-bottom:8px">Stats: 12h &middot; Fixtures: 30min &middot; Live: 30s &middot; Standings: 2h &middot; Cache persists across page refreshes</div><button class="btn-pop" style="background:none;border:none;color:var(--orange);font-size:12px;font-weight:600;cursor:pointer" onclick="S.cache={};S.refCache={};localStorage.removeItem('apiCache');alert('Cache cleared')">&#x1F504; Clear Cache</button></div></div></div>`;
 
   // About section
   h+=`<div class="settings-section">${ssHdr('about','&#x2139;&#xFE0F;','About')}<div class="settings-section-body ${ssBody('about')}"><div style="padding:0 16px 14px">`;
@@ -3089,10 +3129,10 @@ async function openFixture(id){
 
     // Fetch all data in parallel
     const [statsData,evData,lineupData,playerData]=await Promise.all([
-      api('/fixtures/statistics',{fixture:id},300).catch(()=>[]),
-      api('/fixtures/events',{fixture:id},300).catch(()=>[]),
-      api('/fixtures/lineups',{fixture:id},3600).catch(()=>[]),
-      api('/fixtures/players',{fixture:id},300).catch(()=>[])
+      api('/fixtures/statistics',{fixture:id},3600).catch(()=>[]),
+      api('/fixtures/events',{fixture:id},3600).catch(()=>[]),
+      api('/fixtures/lineups',{fixture:id},14400).catch(()=>[]),
+      api('/fixtures/players',{fixture:id},3600).catch(()=>[])
     ]);
 
     // === MATCH STATS TAB ===
@@ -3307,13 +3347,13 @@ async function loadSidelined(id){
 async function loadPlayerCards(p){
   const el=document.getElementById('player-cards');if(!el)return;
   try{
-    const fx=await api('/fixtures',{team:p.tid,season:S.season,league:S.league},3600);
-    const finished=fx.filter(f=>['FT','AET','PEN'].includes(f.fixture.status.short)).slice(0,15);
+    const fx=await api('/fixtures',{team:p.tid,season:S.season,league:S.league},14400);
+    const finished=fx.filter(f=>['FT','AET','PEN'].includes(f.fixture.status.short)).slice(0,10);
     const buckets=[{l:"1-15'",s:1,e:15,y:0,r:0},{l:"16-30'",s:16,e:30,y:0,r:0},{l:"31-45'",s:31,e:45,y:0,r:0},{l:"46-60'",s:46,e:60,y:0,r:0},{l:"61-75'",s:61,e:75,y:0,r:0},{l:"76-90'",s:76,e:90,y:0,r:0},{l:"90+'",s:91,e:120,y:0,r:0}];
     let cards=[];
-    for(const f of finished.slice(0,10)){
+    for(const f of finished.slice(0,6)){
       try{
-        const ev=await api('/fixtures/events',{fixture:f.fixture.id,type:'Card'},3600);
+        const ev=await api('/fixtures/events',{fixture:f.fixture.id,type:'Card'},14400);
         ev.filter(e=>e.player.id===p.id).forEach(c=>{
           const min=(c.time.elapsed||0)+(c.time.extra||0);
           const t=c.detail==='Yellow Card'?'y':c.detail==='Second Yellow card'?'yr':'r';
@@ -3359,8 +3399,8 @@ async function openTeam(tid,name){
   body.innerHTML=`<div class="loading"><div class="spin"></div><div class="ltxt">Loading team analytics...</div></div>`;
   try{
     const [teamStats,injuries]=await Promise.all([
-      api('/teams/statistics',{team:tid,league:S.league,season:S.season},3600).catch(()=>null),
-      api('/injuries',{team:tid,season:S.season,league:S.league},3600).catch(()=>[])
+      api('/teams/statistics',{team:tid,league:S.league,season:S.season},14400).catch(()=>null),
+      api('/injuries',{team:tid,season:S.season,league:S.league},14400).catch(()=>[])
     ]);
 
     let h='';
@@ -3432,9 +3472,9 @@ async function openTeam(tid,name){
       let teamFouls=0,oppFouls=0,teamCardsFromFx=0,oppCards=0,fxCount=0;
       let homeFouls=0,homeCards=0,homeGames=0,awayFouls=0,awayCards=0,awayGames=0;
       try{
-        const teamFx=await api('/fixtures',{team:tid,season:S.season,league:S.league,last:15},3600);
+        const teamFx=await api('/fixtures',{team:tid,season:S.season,league:S.league,last:8},14400);
         const finFx=teamFx.filter(fx=>['FT','AET','PEN'].includes(fx.fixture.status.short));
-        for(const fx of finFx.slice(0,10)){
+        for(const fx of finFx.slice(0,6)){
           try{
             const ms=await api('/fixtures/statistics',{fixture:fx.fixture.id},86400);
             if(ms.length===2){
@@ -3527,11 +3567,11 @@ async function openH2H(t1,t2,n1,n2,l1,l2){
   const body=document.getElementById('modal-h2h-body');
   body.innerHTML=`<div class="loading"><div class="spin"></div><div class="ltxt">Loading details...</div></div>`;
   try{
-    const fx=await api('/fixtures/headtohead',{h2h:`${t1}-${t2}`,last:10},86400);
+    const fx=await api('/fixtures/headtohead',{h2h:`${t1}-${t2}`,last:5},86400);
     let h=`<div class="h2h-vs"><div class="h2h-team"><img src="${l1}" alt="" onerror="this.style.display='none'"><span>${decodeURIComponent(n1)}</span></div><span class="h2h-x">VS</span><div class="h2h-team"><img src="${l2}" alt="" onerror="this.style.display='none'"><span>${decodeURIComponent(n2)}</span></div></div>`;
     if(!fx.length){h+=`<div class="empty"><div class="et">No H2H data</div></div>`;body.innerHTML=h;return}
     let totalCards=0,totalY=0,totalR=0,totalCorners=0,totalFouls=0,matchCount=0;
-    for(const f of fx.slice(0,8)){
+    for(const f of fx.slice(0,3)){
       try{
         const [ev,ms]=await Promise.all([
           api('/fixtures/events',{fixture:f.fixture.id,type:'Card'},86400),
@@ -3692,19 +3732,19 @@ async function checkPredAccuracy(){
   for(const pred of hist){
     if(pred.result!==null) continue; // already resolved
     try{
-      const fx=await api('/fixtures',{id:pred.fid},300);
+      const fx=await api('/fixtures',{id:pred.fid},1800);
       if(!fx.length) continue;
       const f=fx[0];
       if(!['FT','AET','PEN'].includes(f.fixture.status.short)) continue;
 
       if(pred.type==='cards'){
-        const ev=await api('/fixtures/events',{fixture:pred.fid,type:'Card'},3600);
+        const ev=await api('/fixtures/events',{fixture:pred.fid,type:'Card'},14400);
         const actual=ev.filter(e=>e.type==='Card').length;
         pred.actual=actual;
         pred.result=Math.abs(actual-pred.predicted)<=1.5?'hit':'miss';
         updated=true;
       } else if(pred.type==='corners'){
-        const ms=await api('/fixtures/statistics',{fixture:pred.fid},3600);
+        const ms=await api('/fixtures/statistics',{fixture:pred.fid},14400);
         let actual=0;
         ms.forEach(t=>{const c=t.statistics?.find(s=>s.type==='Corner Kicks');actual+=(parseInt(c?.value)||0)});
         pred.actual=actual;
@@ -3846,11 +3886,11 @@ function toFrac(dec){if(!dec||dec<=1)return'—';const d=parseFloat(dec);const f
 async function loadAccas(forceRefresh=false){
   const el=document.getElementById('page-accas');
   const cached=getAccaCache();
-  // Show cached immediately while loading
+  // Show cached if less than 2 hours old (saves ~60+ API calls)
   if(cached.html&&!forceRefresh){
     el.innerHTML=cached.html;
-    // Refresh in background if stale
-    if(!cached.ts||Date.now()-cached.ts>1800000) generateAccas(false);
+    // Only regenerate if older than 2 hours
+    if(!cached.ts||Date.now()-cached.ts>7200000) generateAccas(false);
     return;
   }
   el.innerHTML=`<div class="pg-title">🎯 Acca Engine</div>${leagueHdr()}<div class="loading"><div class="spin"></div><div class="ltxt">Generating accumulator tips...</div></div>`;
@@ -3860,7 +3900,7 @@ async function loadAccas(forceRefresh=false){
 async function generateAccas(renderNow){
   try{
     // Fetch next 48h fixtures
-    const allFx=await api('/fixtures',{league:S.league,season:S.season,next:20},300);
+    const allFx=await api('/fixtures',{league:S.league,season:S.season,next:20},3600);
     const now=new Date();
     const in48h=new Date(now.getTime()+48*3600000);
     const fx48=allFx.filter(f=>new Date(f.fixture.date)<=in48h);
@@ -4076,12 +4116,12 @@ async function buildBestValueAcca(existingPredMap,existingOddsMap,ts){
 
   // Scan top leagues for value
   const valuePicks=[];
-  const scanLeagues=LEAGUES.filter(l=>![1,4,15].includes(l.id)).slice(0,12); // Skip tournaments, limit API calls
+  const scanLeagues=LEAGUES.filter(l=>![1,4,15].includes(l.id)).slice(0,isEcoMode()?3:6); // Reduced from 12 to 6 leagues
 
   for(const lg of scanLeagues){
     try{
-      const fx=await api('/fixtures',{league:lg.id,season:S.season,next:6},600);
-      for(const f of fx.slice(0,4)){
+      const fx=await api('/fixtures',{league:lg.id,season:S.season,next:6},3600);
+      for(const f of fx.slice(0,2)){
         // Get prediction
         let pred=existingPredMap[f.fixture.id];
         if(!pred){
@@ -4206,7 +4246,7 @@ function accaFooter(type,picks,combo,avgConf,ts){
 }
 
 async function refreshAcca(){
-  S.cache={};// clear fixture cache to force fresh
+  S.cache={};localStorage.removeItem('apiCache');// clear fixture cache to force fresh
   const el=document.getElementById('page-accas');
   el.innerHTML=`<div class="pg-title">🎯 Acca Engine</div>${leagueHdr()}<div class="loading"><div class="spin"></div><div class="ltxt">Refreshing accumulators...</div></div>`;
   await generateAccas(true);
@@ -4512,7 +4552,7 @@ async function generateTips(){
     for(const lg of sortedLeagues){
       if(getApiCallCount()>=90) break;
       try{
-        const fx=await api('/fixtures',{league:lg.id,season:S.season,from:today,to:tomorrow},300);
+        const fx=await api('/fixtures',{league:lg.id,season:S.season,from:today,to:tomorrow},1800);
         incrApiCallCount();
         fx.forEach(f=>{f._league=lg.name;f._leagueId=lg.id});
         allFixtures.push(...fx);
@@ -4539,7 +4579,7 @@ async function generateTips(){
         entry.h2h=h2h.map(m=>({home:m.teams.home.name,away:m.teams.away.name,homeGoals:m.goals.home,awayGoals:m.goals.away,date:m.fixture.date}));
       }catch(e){}
       try{
-        const inj=await api('/injuries',{fixture:f.fixture.id},3600);
+        const inj=await api('/injuries',{fixture:f.fixture.id},14400);
         incrApiCallCount();
         entry.injuries=inj.map(i=>({player:i.player.name,team:i.team.name,type:i.player.type,reason:i.player.reason}));
       }catch(e){}
@@ -4684,7 +4724,7 @@ async function settleTips(){
         if(csMatch) result=(parseInt(csMatch[1])===hg&&parseInt(csMatch[2])===ag)?'Won':'Lost';
       } else if(bt.includes('half time')&&bt.includes('full time')){
         try{
-          const evs=await api('/fixtures/events',{fixture:fixture.fixture.id,type:'Goal'},300);
+          const evs=await api('/fixtures/events',{fixture:fixture.fixture.id,type:'Goal'},3600);
           incrApiCallCount();
           if(!evs.length){result='Void'}else{
             // Count HT goals (elapsed <= 45 incl. stoppage)
@@ -4709,7 +4749,7 @@ async function settleTips(){
         }catch(e){result='Void'}
       } else if(bt.includes('first team to score')){
         try{
-          const evs=await api('/fixtures/events',{fixture:fixture.fixture.id,type:'Goal'},300);
+          const evs=await api('/fixtures/events',{fixture:fixture.fixture.id,type:'Goal'},3600);
           incrApiCallCount();
           if(evs.length){
             const first=evs.sort((a,b)=>(a.time.elapsed||0)-(b.time.elapsed||0))[0];
@@ -4718,7 +4758,7 @@ async function settleTips(){
         }catch(e){result='Void'}
       } else if(bt.includes('goalscorer')){
         try{
-          const evs=await api('/fixtures/events',{fixture:fixture.fixture.id,type:'Goal'},300);
+          const evs=await api('/fixtures/events',{fixture:fixture.fixture.id,type:'Goal'},3600);
           incrApiCallCount();
           const scorerNames=evs.map(e=>(e.player.name||'').toLowerCase());
           // Extract player name from selection
@@ -5213,7 +5253,7 @@ async function loadBookingPts(){
   try{
     const [yl,fx]=await Promise.all([
       api('/players/topyellowcards',{league:S.league,season:S.season},43200),
-      api('/fixtures',{league:S.league,season:S.season,next:15},300)
+      api('/fixtures',{league:S.league,season:S.season,next:15},3600)
     ]);
     const players=yl.map(toP).filter(Boolean);
     const calMult=getCalMult(S.league);
