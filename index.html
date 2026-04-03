@@ -2113,21 +2113,48 @@ function buildHomeFixtureRow(f){
 const FEATURED_LEAGUE_IDS=new Set([39,140,135,78,61,2,3,1,4,9]);
 
 function buildFeaturedMatches(fixtures){
-  // Pick top 4 fixtures: live first, then biggest leagues, then soonest kick-off
+  // HERO: Top 3 matches by booking risk score across all leagues
   const liveStatuses=['1H','2H','HT','ET','P','LIVE','BT'];
-  const scored=fixtures.map(f=>{
-    const isLive=liveStatuses.includes(f.fixture.status.short);
-    const isFeatured=FEATURED_LEAGUE_IDS.has(f.league.id);
-    const score=(isLive?1000:0)+(isFeatured?100:0)+(1000-new Date(f.fixture.date).getHours());
-    return{f,score,isLive};
-  }).sort((a,b)=>b.score-a.score).slice(0,4);
-  if(!scored.length) return '';
+  const finStatuses=['FT','AET','PEN'];
+  // Only score upcoming/live, not finished
+  const upcoming=fixtures.filter(f=>!finStatuses.includes(f.fixture.status.short));
+  if(!upcoming.length) return '';
 
-  let h=`<div class="home-featured"><div class="home-featured-title">⭐ Featured Matches</div>`;
-  scored.forEach(({f,isLive})=>{
+  const scored=upcoming.map(f=>{
+    const isLive=liveStatuses.includes(f.fixture.status.short);
+    // Booking risk: league calibration + ref + featured league bonus
+    const cal=LEAGUE_CALIBRATION[f.league.id];
+    const calMult=cal?cal.mult:1.0;
+    const avgCards=cal?cal.avgCards:3.5;
+    let refStrict=50;
+    if(f.fixture.referee){const rn=f.fixture.referee.split(',')[0].trim();const rs=S.refCache[rn];if(rs)refStrict=rs.strict||50}
+    const riskScore=Math.min(100,Math.round(refStrict*0.35+calMult*30+avgCards*5+(isLive?15:0)));
+    const predCards=Math.max(2,Math.round(avgCards*calMult*10)/10);
+    return{f,riskScore,predCards,refStrict,isLive,calMult,avgCards};
+  }).sort((a,b)=>b.riskScore-a.riskScore).slice(0,3);
+
+  let h=`<div class="home-featured"><div class="home-featured-title">🔥 Top Booking Predictions Today</div>`;
+  scored.forEach(({f,riskScore,predCards,refStrict,isLive,calMult})=>{
     const time=isLive?(f.fixture.status.elapsed||'')+"'":stime(f.fixture.date);
-    const hasScore=isLive||['FT','AET','PEN'].includes(f.fixture.status.short);
-    h+=`<div class="home-feat-card" onclick="openFixture(${f.fixture.id})"><div class="home-feat-teams"><div class="home-feat-team"><img src="${f.teams.home.logo||''}" alt="" onerror="this.style.display='none'"><span>${f.teams.home.name}</span></div><div style="text-align:center">${hasScore?`<div style="font-size:20px;font-weight:800">${f.goals.home??0} - ${f.goals.away??0}</div>`:'<div class="home-feat-vs">VS</div>'}</div><div class="home-feat-team"><img src="${f.teams.away.logo||''}" alt="" onerror="this.style.display='none'"><span>${f.teams.away.name}</span></div></div><div class="home-feat-meta">${isLive?`<span class="home-feat-live">● LIVE ${time}</span>`:`<span>🕐 ${time}</span>`}<span><img src="${f.league.logo||''}" style="width:12px;height:12px;vertical-align:middle" onerror="this.style.display='none'"> ${f.league.name}</span></div></div>`;
+    const riskCol=riskScore>65?'var(--red)':riskScore>45?'var(--orange)':'var(--yellow)';
+    const riskLbl=riskScore>65?'HIGH RISK':riskScore>45?'MEDIUM':'MODERATE';
+    const calLbl=calMult>1.1?'High-card league':calMult<0.9?'Low-card league':'';
+    const refLbl=refStrict>65?'Strict ref':refStrict>45?'Average ref':'Lenient ref';
+
+    h+=`<div class="home-feat-card" onclick="openFixture(${f.fixture.id})" style="border-left:3px solid ${riskCol}">`;
+    // Teams row
+    h+=`<div class="home-feat-teams"><div class="home-feat-team"><img src="${f.teams.home.logo||''}" alt="" onerror="this.style.display='none'"><span>${f.teams.home.name}</span></div><div style="text-align:center">${isLive?`<div style="font-size:18px;font-weight:800">${f.goals.home??0} - ${f.goals.away??0}</div>`:'<div class="home-feat-vs">VS</div>'}</div><div class="home-feat-team"><img src="${f.teams.away.logo||''}" alt="" onerror="this.style.display='none'"><span>${f.teams.away.name}</span></div></div>`;
+    // Risk + prediction row
+    h+=`<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--divider)">`;
+    h+=`<div style="display:flex;align-items:center;gap:6px">${riskRingSVG(riskScore,30)}<div><div style="font-size:11px;font-weight:700;color:${riskCol}">${riskLbl}</div><div style="font-size:10px;color:var(--text3)">Booking risk ${riskScore}/100</div></div></div>`;
+    h+=`<div style="text-align:right"><div style="font-size:16px;font-weight:800;color:var(--yellow)">${predCards.toFixed(1)}</div><div style="font-size:10px;color:var(--text3)">pred. cards</div></div>`;
+    h+=`</div>`;
+    // Meta row: time, league, ref, calibration
+    h+=`<div class="home-feat-meta" style="margin-top:6px;flex-wrap:wrap">${isLive?`<span class="home-feat-live">● LIVE ${time}</span>`:`<span>🕐 ${time}</span>`}<span><img src="${f.league.logo||''}" style="width:12px;height:12px;vertical-align:middle" onerror="this.style.display='none'"> ${f.league.name}</span>`;
+    if(f.fixture.referee) h+=`<span>🏁 ${f.fixture.referee.split(',')[0]} · ${refLbl}</span>`;
+    if(calLbl) h+=`<span style="color:${calMult>1.1?'var(--red)':'var(--blue)'}">${calLbl} (${calMult>1?'+':''}${Math.round((calMult-1)*100)}%)</span>`;
+    h+=`</div>`;
+    h+=`</div>`;
   });
   h+=`</div>`;
   return h;
