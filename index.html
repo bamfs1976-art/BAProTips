@@ -88,12 +88,32 @@ body{padding-top:var(--safe-top)}
 .tab-content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(72px + var(--safe-bottom))}
 
 .nav-bar{position:fixed;bottom:0;left:0;right:0;background:var(--nav-bg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--divider);z-index:100;display:flex;flex-direction:column}
-.nav-row{display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.nav-row{display:flex;overflow-x:visible}
 .nav-row::-webkit-scrollbar{display:none}
-.nav-btn{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:#6b7280;font-size:10px;font-weight:500;padding:8px 12px 6px;cursor:pointer;transition:color .2s;min-width:56px}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:#6b7280;font-size:10px;font-weight:500;padding:10px 4px 8px;cursor:pointer;transition:color .2s;min-height:50px;min-width:0}
 .nav-btn.active{color:var(--yellow)}
-.nav-btn svg{width:18px;height:18px;fill:currentColor}
+.nav-btn svg{width:20px;height:20px;fill:currentColor}
 .nav-btn.active svg{filter:drop-shadow(0 0 4px rgba(255,215,0,.4))}
+/* Analyse sub-nav pills */
+.analyse-pills{display:flex;gap:6px;padding:8px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.analyse-pills::-webkit-scrollbar{display:none}
+.analyse-pill{flex-shrink:0;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;background:var(--card2);color:var(--text2);border:1px solid transparent;transition:all .2s;white-space:nowrap}
+.analyse-pill.on{background:rgba(255,215,0,.12);color:var(--yellow);border-color:rgba(255,215,0,.3)}
+/* More menu grid */
+.more-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:8px 16px}
+.more-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:20px 12px;background:var(--card);border-radius:var(--radius);cursor:pointer;transition:background .15s;border:1px solid var(--divider);min-height:90px}
+.more-card:active{background:var(--card2)}
+.more-card .mc-icon{font-size:26px}
+.more-card .mc-label{font-size:12px;font-weight:600;color:var(--text)}
+html[data-theme="light"] .analyse-pill.on{background:rgba(200,90,0,.1);color:var(--yellow);border-color:rgba(200,90,0,.25)}
+html[data-theme="light"] .more-card{background:var(--card);border-color:var(--divider)}
+/* Colour-blind safe mode */
+[data-cb="true"] .form-W,[data-cb="true"] .vbadge.good,[data-cb="true"] .streak-badge.clean,[data-cb="true"] .freshness-badge.fresh{background-image:repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(255,255,255,.15) 3px,rgba(255,255,255,.15) 5px)}
+[data-cb="true"] .form-L,[data-cb="true"] .vbadge.poor,[data-cb="true"] .streak-badge.hot,[data-cb="true"] .freshness-badge.outdated{background-image:radial-gradient(circle,rgba(255,255,255,.18) 1px,transparent 1px);background-size:5px 5px}
+/* More sub-content container */
+.more-sub-content{padding:0}
+.more-back-btn{display:flex;align-items:center;gap:6px;padding:10px 16px;font-size:12px;font-weight:600;color:var(--yellow);cursor:pointer;background:none;border:none;border-bottom:1px solid var(--divider);width:100%}
+.more-back-btn:active{background:var(--card2)}
 .nav-safe{height:var(--safe-bottom);background:var(--nav-safe-bg)}
 
 .pg-title{font-size:24px;font-weight:800;padding:14px 20px 6px;letter-spacing:-.5px}
@@ -570,10 +590,9 @@ html[data-theme="light"] .tv-chan.itv{background:rgba(0,110,160,.08);color:#006e
 html[data-theme="light"] .tv-chan.prime{background:rgba(0,150,200,.08);color:#0096c8}
 .tv-3pm{font-size:10px;color:var(--text3);padding:6px 14px;font-style:italic}
 
-/* ====== FIX 1: Nav Scroll Indicator ====== */
+/* ====== FIX 1: Nav Scroll Indicator (disabled — fixed 5-tab nav) ====== */
 .nav-row{position:relative}
-.nav-row::after{content:'';position:absolute;right:0;top:0;bottom:0;width:32px;background:linear-gradient(to right,transparent,var(--nav-bg));pointer-events:none;z-index:2;transition:opacity .3s}
-.nav-row.scrolled-end::after{opacity:0}
+.nav-row::after{display:none}
 
 /* ====== FIX 2: Refresh Button ====== */
 .refresh-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--card2);border:1px solid var(--divider);cursor:pointer;margin-left:8px;vertical-align:middle;transition:transform .3s,background .15s;flex-shrink:0}
@@ -718,7 +737,7 @@ html[data-theme="light"] .coach-card{background:var(--bg);border-color:var(--yel
 html[data-theme="light"] .streak-badge.hot{color:var(--red);background:rgba(181,0,10,.08)}
 html[data-theme="light"] .streak-badge.clean{color:var(--green);background:rgba(26,122,60,.08)}
 html[data-theme="light"] .today-panel{background:var(--card)}
-html[data-theme="light"] .nav-row::after{background:linear-gradient(to right,transparent,var(--nav-bg))}
+/* html[data-theme="light"] .nav-row::after — disabled, 5 fixed tabs */
 
 /* ====== HOMEPAGE: Cross-League Fixtures ====== */
 .home-date{font-size:20px;font-weight:800;padding:0 20px;letter-spacing:-.3px;color:var(--text2)}
@@ -804,7 +823,10 @@ html[data-theme="light"] .all-leagues-msg .al-action{background:var(--card2);bor
 <div class="copy-toast" id="copy-toast">Copied to clipboard ✓</div>
 <div id="app">
 <div id="global-search" class="gsearch"><div class="gsearch-bar"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg><input type="text" placeholder="Search leagues, players, referees..." id="gsearch-input" oninput="globalSearch(this.value)"><button style="background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer" onclick="toggleGlobalSearch()">&#x2715;</button></div><div class="gsearch-results" id="gsearch-results"></div></div>
-<div id="page-dashboard" class="tab-content tab-page active"></div>
+<div id="page-home" class="tab-content tab-page active"></div>
+<div id="page-analyse" class="tab-content tab-page"></div>
+<div id="page-more" class="tab-content tab-page"></div>
+<div id="page-dashboard" class="tab-content tab-page"></div>
 <div id="page-watchlist" class="tab-content tab-page"></div>
 <div id="page-results" class="tab-content tab-page"></div>
 <div id="page-upcoming" class="tab-content tab-page"></div>
@@ -821,7 +843,6 @@ html[data-theme="light"] .all-leagues-msg .al-action{background:var(--card2);bor
 <div id="page-settings" class="tab-content tab-page"></div>
 
 <nav class="nav-bar">
-<div class="sec-nav" id="sec-nav"></div>
 <div class="nav-row" id="nav-row"></div>
 <div class="nav-safe"></div>
 </nav>
@@ -844,7 +865,7 @@ html[data-theme="light"] .all-leagues-msg .al-action{background:var(--card2);bor
 // ======================================================================
 //  BOOKING ANALYTICS PRO v3.0 — Full Analytics Suite
 // ======================================================================
-const S={tab:'dashboard',apiKey:localStorage.getItem('ba_key')||'',league:+(localStorage.getItem('ba_lg'))||39,season:+(localStorage.getItem('ba_sn'))||2025,cache:{},refCache:{},lastLoaded:{},compareSlot:null};
+const S={tab:'home',apiKey:localStorage.getItem('ba_key')||'',league:+(localStorage.getItem('ba_lg'))||39,season:+(localStorage.getItem('ba_sn'))||2025,cache:{},refCache:{},lastLoaded:{},compareSlot:null};
 
 // ====== API Budget System ======
 const API_DAILY_BUDGET = 500;
@@ -1117,7 +1138,7 @@ function doRefresh(tab){
   const btn=document.getElementById('refresh-btn-'+tab);
   if(btn)btn.classList.add('spinning');
   S.lastLoaded[tab]=null;
-  const fn={dashboard:loadDash,watchlist:loadWatchlist,results:loadResults,upcoming:loadUpcoming,standings:loadStandings,referees:loadReferees,bookingpts:loadBookingPts,tracker:loadTracker,accas:loadAccas,tips:loadTips,intelligence:loadIntelligence,predictions:loadPredictions,live:loadLive,settings:renderSettings};
+  const fn={home:loadHome,analyse:loadAnalyse,more:loadMore,dashboard:loadDash,watchlist:loadWatchlist,results:loadResults,upcoming:loadUpcoming,standings:loadStandings,referees:loadReferees,bookingpts:loadBookingPts,tracker:loadTracker,accas:loadAccas,tips:loadTips,intelligence:loadIntelligence,predictions:loadPredictions,live:loadLive,settings:renderSettings};
   const loadFn=fn[tab];
   if(loadFn){
     const result=loadFn();
@@ -1497,46 +1518,351 @@ function prow(p,rank,showRate=false){
   return `<div class="prow" onclick="openPlayer(${p.id})"><span class="prank">${rank}</span><img class="pphoto" src="${p.photo||''}" alt="" onerror="this.src=''"><div class="pinfo"><div class="pname">${p.name}${p.injured?'<span style="color:var(--red);margin-left:4px;font-size:10px">&#x1FA79;</span>':''}${getPlayerStreakBadge(p)}</div><div class="pteam"><img src="${p.tlogo||''}" alt="" onerror="this.style.display='none'">${p.team}</div></div><div class="pcards"><span class="pcc" style="color:var(--yellow)">${ci('y',8)} ${p.y+p.yr}</span>${p.rd>0?`<span class="pcc" style="color:var(--red)">${ci('r',8)} ${p.rd}</span>`:''}</div>${showRate?`<span style="font-size:10px;color:var(--text3)">${p.p90.toFixed(2)}/90</span>`:''}${rbadge(p.risk,p.rc)}</div>`
 }
 
-// ---- Nav (two-level) ----
+// ---- Nav (5 fixed bottom tabs) ----
+const NAV_TABS=[
+  {id:'home',label:'Home',icon:'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1'},
+  {id:'analyse',label:'Analyse',icon:'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'},
+  {id:'live',label:'Live',icon:'M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z'},
+  {id:'tracker',label:'Track',icon:'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4'},
+  {id:'more',label:'More',icon:'M4 6h16M4 12h16M4 18h16'}
+];
+
+// Keep SECTIONS for backward compat (referenced by sectionForTab calls in other code)
 const SECTIONS=[
-  {id:'analysis',label:'📊 Analysis',tabs:['dashboard','standings','referees','bookingpts','tracker','predictions']},
-  {id:'match',label:'⚽ Match',tabs:['live','results','upcoming','watchlist','settings']},
-  {id:'tips',label:'💡 Tips',tabs:['tips','intelligence','accas']}
+  {id:'analysis',label:'Analysis',tabs:['home','dashboard','standings','referees','bookingpts','tracker','predictions','analyse']},
+  {id:'match',label:'Match',tabs:['live','results','upcoming','watchlist','settings']},
+  {id:'tips',label:'Tips',tabs:['tips','intelligence','accas','more']}
 ];
 function sectionForTab(tab){return SECTIONS.find(s=>s.tabs.includes(tab))||SECTIONS[0]}
-let activeSection=sectionForTab(S.tab).id;
+
+let _analyseSubTab='dashboard';
+let _moreSubPage=null;
 
 function buildNav(){
-  // Top section bar with API counter badge
-  const secBar=document.getElementById('sec-nav');
+  document.getElementById('nav-row').innerHTML=NAV_TABS.map(t=>{
+    const isActive=t.id===S.tab;
+    return `<button class="nav-btn${isActive?' active':''}" data-t="${t.id}" onclick="go('${t.id}')" aria-label="${t.label}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${t.icon}"/></svg>${t.label}</button>`;
+  }).join('');
+}
+
+function go(tab){
+  S.tab=tab;
+  document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
+  const pageEl=document.getElementById('page-'+tab);
+  if(pageEl) pageEl.classList.add('active');
+  buildNav();
+  const fn={home:loadHome,analyse:loadAnalyse,live:loadLive,tracker:loadTracker,more:loadMore,
+    dashboard:loadDash,watchlist:loadWatchlist,results:loadResults,upcoming:loadUpcoming,
+    standings:loadStandings,referees:loadReferees,bookingpts:loadBookingPts,
+    accas:loadAccas,tips:loadTips,intelligence:loadIntelligence,predictions:loadPredictions,
+    settings:renderSettings};
+  fn[tab]?.();
+}
+
+// ---- Analyse sub-navigation ----
+function loadAnalyse(){
+  const el=document.getElementById('page-analyse');
+  const pills=[
+    {id:'dashboard',label:'Stats'},
+    {id:'standings',label:'Standings'},
+    {id:'referees',label:'Refs'},
+    {id:'predictions',label:'Predict'},
+    {id:'bookingpts',label:'Booking Pts'}
+  ];
+  let h=`<div class="pg-title">📊 Analyse ${refreshBtn('analyse')}${freshnessBadge(_analyseSubTab)}</div>`;
+  h+=leagueHdr()+lpicker()+`<div style="display:flex;align-items:center;padding:4px 0">${spicker()}</div>`;
+  h+=`<div class="analyse-pills">`;
+  pills.forEach(p=>{
+    h+=`<button class="analyse-pill${_analyseSubTab===p.id?' on':''}" onclick="switchAnalyseSub('${p.id}')">${p.label}</button>`;
+  });
+  h+=`</div>`;
+  h+=`<div id="analyse-sub-content"></div>`;
+  el.innerHTML=h;
+  loadAnalyseSubContent();
+}
+function switchAnalyseSub(subId){
+  _analyseSubTab=subId;
+  document.querySelectorAll('.analyse-pill').forEach(p=>p.classList.remove('on'));
+  document.querySelector(`.analyse-pill[onclick*="${subId}"]`)?.classList.add('on');
+  loadAnalyseSubContent();
+}
+async function loadAnalyseSubContent(){
+  const container=document.getElementById('analyse-sub-content');
+  if(!container) return;
+  container.innerHTML=`<div class="loading"><div class="spin"></div><div class="ltxt">Loading ${_analyseSubTab}...</div></div>`;
+  // Load into the existing page divs then copy content
+  const targetPage=document.getElementById('page-'+_analyseSubTab);
+  if(!targetPage){container.innerHTML=errPanel('Page not found');return}
+  const fn={dashboard:loadDash,standings:loadStandings,referees:loadReferees,predictions:loadPredictions,bookingpts:loadBookingPts};
+  if(fn[_analyseSubTab]){
+    await fn[_analyseSubTab]();
+    // Move content into analyse sub-content area
+    container.innerHTML=targetPage.innerHTML;
+  }
+}
+
+// ---- More menu grid ----
+function loadMore(){
+  _moreSubPage=null;
+  const el=document.getElementById('page-more');
+  const items=[
+    {id:'settings',icon:'⚙️',label:'Settings'},
+    {id:'watchlist',icon:'⭐',label:'Watchlist'},
+    {id:'results',icon:'📋',label:'Results'},
+    {id:'upcoming',icon:'📅',label:'Upcoming'},
+    {id:'intelligence',icon:'🧠',label:'Intelligence'},
+    {id:'tips',icon:'💡',label:'Tips Admin'}
+  ];
+  let h=`<div class="pg-title">☰ More</div>`;
+  h+=`<div class="more-grid">`;
+  items.forEach(item=>{
+    h+=`<div class="more-card" onclick="openMoreSub('${item.id}')"><span class="mc-icon">${item.icon}</span><span class="mc-label">${item.label}</span></div>`;
+  });
+  h+=`</div>`;
+  h+=`<div style="padding:16px 20px;text-align:center"><div style="font-size:10px;color:var(--text3)">Booking Analytics Pro v3.1.0</div></div>`;
+  el.innerHTML=h;
+}
+function openMoreSub(subId){
+  _moreSubPage=subId;
+  const el=document.getElementById('page-more');
+  el.innerHTML=`<button class="more-back-btn" onclick="loadMore()">← Back to More</button><div id="more-sub-content"><div class="loading"><div class="spin"></div><div class="ltxt">Loading...</div></div></div>`;
+  const fn={settings:renderSettingsInMore,watchlist:loadWatchlistInMore,results:loadResultsInMore,upcoming:loadUpcomingInMore,intelligence:loadIntelligenceInMore,tips:loadTipsInMore};
+  fn[subId]?.();
+}
+function renderSettingsInMore(){
+  renderSettings();
+  const content=document.getElementById('page-settings').innerHTML;
+  const target=document.getElementById('more-sub-content');
+  if(target) target.innerHTML=content;
+}
+function loadWatchlistInMore(){loadSubInMore('watchlist',loadWatchlist)}
+function loadResultsInMore(){loadSubInMore('results',loadResults)}
+function loadUpcomingInMore(){loadSubInMore('upcoming',loadUpcoming)}
+function loadIntelligenceInMore(){loadSubInMore('intelligence',loadIntelligence)}
+function loadTipsInMore(){loadSubInMore('tips',loadTips)}
+async function loadSubInMore(pageId,loadFn){
+  await loadFn();
+  const source=document.getElementById('page-'+pageId);
+  const target=document.getElementById('more-sub-content');
+  if(source&&target) target.innerHTML=source.innerHTML;
+}
+
+// ---- Home tab (consolidated) ----
+async function loadHome(){
+  const el=document.getElementById('page-home');
+  const today=new Date();
+  const dateStr=today.toISOString().split('T')[0];
+  const dayName=today.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const dayOfWeek=today.getDay();
+  const isWeekendDay=dayOfWeek===0||dayOfWeek===5||dayOfWeek===6;
   const _aUsed=getApiCallCount();
   const _aPct=Math.round(_aUsed/API_DAILY_BUDGET*100);
   const _aCol=_aPct>80?'var(--red)':_aPct>50?'var(--orange)':'var(--green)';
-  secBar.innerHTML=SECTIONS.map(s=>
-    `<button class="sec-nav-btn${s.id===activeSection?' active':''}" data-s="${s.id}" onclick="switchSection('${s.id}')" aria-label="${s.label} section">${s.label}</button>`
-  ).join('')+`<span id="eco-badge" style="display:${isEcoMode()?'inline':'none'};font-size:12px;padding:4px 6px;flex-shrink:0" title="Eco Mode ON">&#x1F33F;</span><span style="font-size:9px;padding:4px 8px;color:${_aCol};font-weight:700;flex-shrink:0;white-space:nowrap" title="API calls today">${_aUsed}/${API_DAILY_BUDGET}</span>`;
-  // Bottom tab row — only tabs for active section
-  const sec=SECTIONS.find(s=>s.id===activeSection)||SECTIONS[0];
-  const visibleTabs=TABS.filter(t=>sec.tabs.includes(t.id));
-  document.getElementById('nav-row').innerHTML=visibleTabs.map(t=>
-    `<button class="nav-btn${t.id===S.tab?' active':''}" data-t="${t.id}" onclick="go('${t.id}')" aria-label="${t.label}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${t.icon}"/></svg>${t.label}</button>`
-  ).join('');
+
+  // Header
+  let h=`<div class="pg-title">⚽ BAProTips ${refreshBtn('home')}</div>`;
+  h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:0 20px 8px"><div class="home-date" style="padding:0">${dayName}</div><span style="font-size:10px;padding:4px 8px;color:${_aCol};font-weight:700;border-radius:8px;background:var(--card);white-space:nowrap">${_aUsed}/${API_DAILY_BUDGET}</span></div>`;
+  h+=skeleton('dashboard');
+  el.innerHTML=h;
+
+  try{
+    // Fetch today's fixtures (cross-league) + live
+    const [liveFx,todayFx]=await Promise.all([
+      api('/fixtures',{live:'all'},60).catch(()=>[]),
+      api('/fixtures',{date:dateStr},1800).catch(()=>[])
+    ]);
+    let useFx=todayFx;
+    let dateLabel='Today';
+    if(!todayFx.length){
+      const tomorrow=new Date(today);tomorrow.setDate(tomorrow.getDate()+1);
+      const tomStr=tomorrow.toISOString().split('T')[0];
+      try{useFx=await api('/fixtures',{date:tomStr},1800);dateLabel='Tomorrow'}catch(e){useFx=[]}
+    }
+    window._homeDashFixtures=useFx;
+    _homeFilter='all';
+    markLoaded('home');
+
+    h=`<div class="pg-title">⚽ BAProTips ${refreshBtn('home')}${freshnessBadge('home')}</div>`;
+    h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:0 20px 8px"><div class="home-date" style="padding:0">${dayName}</div><span style="font-size:10px;padding:4px 8px;color:${_aCol};font-weight:700;border-radius:8px;background:var(--card);white-space:nowrap">${_aUsed}/${API_DAILY_BUDGET}</span></div>`;
+
+    // Section 1: Live Now Banner
+    if(liveFx.length){
+      h+=`<div class="home-live-banner" onclick="go('live')"><span class="pulse-dot"></span><div><div class="home-live-count">${liveFx.length} LIVE NOW</div><div class="home-live-label">${liveFx.length} match${liveFx.length!==1?'es':''} in progress</div></div><span class="home-live-cta">Tap to view →</span></div>`;
+    }
+
+    // Section 2: Today's Fixtures (cross-league)
+    if(dateLabel!=='Today')h+=`<div class="home-subtitle" style="color:var(--orange);font-weight:600">No matches today — showing tomorrow's fixtures</div>`;
+    h+=`<div class="home-filter-row"><span class="home-filter-pill active" data-filter="all" onclick="applyHomeFilter('all')">All</span><span class="home-filter-pill" data-filter="live" onclick="applyHomeFilter('live')">🔴 Live</span><span class="home-filter-pill" data-filter="upcoming" onclick="applyHomeFilter('upcoming')">Upcoming</span><span class="home-filter-pill" data-filter="finished" onclick="applyHomeFilter('finished')">Finished</span></div>`;
+    h+=`<div id="home-fixtures-container">${buildHomeLeagueGroups(useFx,'all')}</div>`;
+
+    // Section 3: Daily Betting Intelligence
+    h+=`<div class="home-separator">🧠 Daily Betting Intelligence</div>`;
+    h+=await buildDailyIntelligenceCards();
+
+    // Section 4: Acca Engine (inline)
+    h+=`<div class="home-separator">🎯 Acca Engine</div>`;
+    h+=await buildInlineAccas();
+
+    // Section 5: TV Guide
+    try{const tvHtml=await buildTVGuide();if(tvHtml)h+='<!-- TV_GUIDE -->'+tvHtml+'<!-- /TV_GUIDE -->'}catch(e){}
+
+    // Section 6: Weekend Preview (Fri/Sat/Sun only)
+    if(isWeekendDay){
+      h+=await buildWeekendPreview();
+    }
+
+    // Section 7: Responsible Gambling Notice
+    h+=`<div class="gamble-footer" style="margin:8px 16px;border:1px solid var(--divider);border-radius:10px;padding:12px 16px;text-align:center">
+      <div style="font-size:12px;font-weight:700;margin-bottom:4px">18+</div>
+      <div style="font-size:11px;color:var(--text3)">Please gamble responsibly. <a href="https://www.gambleaware.org" target="_blank" rel="noopener" style="color:var(--yellow);text-decoration:underline">GambleAware.org</a></div>
+      <div style="font-size:10px;color:var(--text3);margin-top:4px">When the fun stops, stop.</div>
+    </div>`;
+
+    el.innerHTML=h;
+  }catch(e){
+    el.innerHTML=`<div class="pg-title">⚽ BAProTips ${refreshBtn('home')}</div><div class="home-date">${dayName}</div>${errPanel(e.message)}`;
+  }
 }
-function switchSection(secId){
-  activeSection=secId;
-  const sec=SECTIONS.find(s=>s.id===secId);
-  // Go to first tab in section if current tab is not in this section
-  if(!sec.tabs.includes(S.tab)) go(sec.tabs[0]);
-  else buildNav();
+
+// ---- Daily Betting Intelligence Cards ----
+async function buildDailyIntelligenceCards(){
+  let h='';
+  try{
+    const effLeague=S.league===0?39:S.league;
+    // Top booked players (reuse cached data if available)
+    const yl=await api('/players/topyellowcards',{league:effLeague,season:S.season},43200).catch(()=>[]);
+    const players=yl.map(toP).filter(Boolean);
+    const topBookers=players.sort((a,b)=>b.p90-a.p90).filter(p=>p.apps>=5).slice(0,5);
+
+    if(topBookers.length){
+      h+=`<div class="card" style="margin:6px 16px 10px"><div style="font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px">${ci('y',10)} Most Likely To Be Booked Today</div>`;
+      topBookers.forEach((p,i)=>{
+        h+=`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;${i<topBookers.length-1?'border-bottom:1px solid var(--divider)':''}" onclick="openPlayer(${p.id})">`;
+        h+=`<span style="font-size:11px;font-weight:700;color:var(--text3);width:16px">${i+1}</span>`;
+        h+=`<img src="${p.photo||''}" alt="" style="width:28px;height:28px;border-radius:50%;object-fit:cover;background:var(--card2)" onerror="this.src=''">`;
+        h+=`<div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div><div style="font-size:10px;color:var(--text3)">${p.team}</div></div>`;
+        h+=`<div style="text-align:right"><div style="font-size:12px;font-weight:800;color:var(--yellow)">${p.p90.toFixed(2)}/90</div><div style="font-size:10px;color:var(--text3)">${p.tot} cards</div></div>`;
+        h+=`</div>`;
+      });
+      h+=`</div>`;
+    }
+
+    // Over/Under total cards
+    const avgCards=players.length?Math.round(players.reduce((s,p)=>s+p.tot,0)/Math.max(players.length,1)*10)/10:3.5;
+    h+=`<div class="card" style="margin:6px 16px 10px"><div style="font-size:12px;font-weight:700;margin-bottom:6px">📊 Cards Over/Under Indicators</div>`;
+    h+=`<div style="display:flex;gap:6px;flex-wrap:wrap">`;
+    h+=`<span class="bp-line bp-over">Over 3.5 Cards: ${avgCards>3.5?'Likely':'Even'}</span>`;
+    h+=`<span class="bp-line bp-${avgCards>4.5?'over':'under'}">Over 4.5 Cards: ${avgCards>4.5?'Likely':'Unlikely'}</span>`;
+    h+=`<span class="bp-line bp-${avgCards>5.5?'over':'under'}">Over 5.5 Cards: ${avgCards>5.5?'Likely':'Rare'}</span>`;
+    h+=`</div></div>`;
+
+    // Referee of the day (strictest ref officiating)
+    const today=new Date().toISOString().split('T')[0];
+    const todayFx=await api('/fixtures',{date:today},1800).catch(()=>[]);
+    let strictestRef=null,strictestScore=0;
+    todayFx.forEach(f=>{
+      if(f.fixture.referee){
+        const rn=f.fixture.referee.split(',')[0].trim();
+        const rs=S.refCache[rn];
+        if(rs&&(rs.strict||0)>strictestScore){strictestScore=rs.strict;strictestRef={name:rn,strict:rs.strict,match:`${f.teams.home.name} vs ${f.teams.away.name}`,league:f.league.name}}
+      }
+    });
+    if(strictestRef){
+      const rcol=strictestRef.strict>65?'var(--red)':strictestRef.strict>45?'var(--orange)':'var(--yellow)';
+      h+=`<div class="card" style="margin:6px 16px 10px"><div style="font-size:12px;font-weight:700;margin-bottom:6px">🏁 Referee of the Day</div>`;
+      h+=`<div style="display:flex;align-items:center;gap:10px"><div style="font-size:24px;font-weight:900;color:${rcol}">${strictestRef.strict}</div>`;
+      h+=`<div><div style="font-size:13px;font-weight:700">${strictestRef.name}</div><div style="font-size:10px;color:var(--text3)">${strictestRef.match}</div><div style="font-size:10px;color:var(--text3)">${strictestRef.league} · Strictness ${strictestRef.strict}/100</div></div></div></div>`;
+    }
+  }catch(e){
+    h+=`<div style="font-size:10px;color:var(--text3);padding:4px 20px">Intelligence data unavailable</div>`;
+  }
+  return h;
 }
-function go(tab){
-  S.tab=tab;
-  activeSection=sectionForTab(tab).id;
-  document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
-  document.getElementById('page-'+tab).classList.add('active');
-  buildNav();
-  const fn={dashboard:loadDash,watchlist:loadWatchlist,results:loadResults,upcoming:loadUpcoming,standings:loadStandings,referees:loadReferees,bookingpts:loadBookingPts,tracker:loadTracker,accas:loadAccas,tips:loadTips,intelligence:loadIntelligence,predictions:loadPredictions,live:loadLive,settings:renderSettings};
-  fn[tab]?.();
+
+// ---- Inline Accas for Home ----
+async function buildInlineAccas(){
+  let h='';
+  try{
+    const cached=getAccaCache();
+    if(cached.html&&cached.ts&&Date.now()-cached.ts<7200000){
+      // Strip the pg-title and leagueHdr from cached HTML
+      let accaHtml=cached.html;
+      accaHtml=accaHtml.replace(/<div class="pg-title">.*?<\/div>/,'');
+      h+=accaHtml;
+    } else {
+      h+=`<div style="padding:16px 20px;text-align:center;font-size:11px;color:var(--text3)">Accas loading in background... <span style="color:var(--yellow);cursor:pointer" onclick="go('analyse');switchAnalyseSub('dashboard')">View full acca engine</span></div>`;
+      // Trigger background generation
+      generateAccas(false).catch(()=>{});
+    }
+  }catch(e){
+    h+=`<div style="font-size:10px;color:var(--text3);padding:4px 20px">Acca data unavailable</div>`;
+  }
+  return h;
+}
+
+// ---- Weekend Preview Card ----
+async function buildWeekendPreview(){
+  let h='';
+  try{
+    const effLeague=S.league===0?39:S.league;
+    const yl=await api('/players/topyellowcards',{league:effLeague,season:S.season},43200).catch(()=>[]);
+    const players=yl.map(toP).filter(Boolean);
+    const topPicks=players.sort((a,b)=>b.p90-a.p90).filter(p=>p.apps>=5).slice(0,3);
+
+    h+=`<div class="home-separator">📅 Weekend Preview</div>`;
+    h+=`<div class="card" style="margin:6px 16px 10px;background:linear-gradient(135deg,var(--card),var(--card2));border:1px solid var(--divider)">`;
+    h+=`<div style="font-size:14px;font-weight:800;margin-bottom:10px">🏟️ Weekend Booking Picks</div>`;
+
+    if(topPicks.length){
+      h+=`<div style="margin-bottom:10px">`;
+      topPicks.forEach((p,i)=>{
+        h+=`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;${i<topPicks.length-1?'border-bottom:1px solid var(--divider)':''}">`;
+        h+=`<span style="font-size:14px;font-weight:900;color:var(--yellow)">${i+1}</span>`;
+        h+=`<div style="flex:1"><div style="font-size:12px;font-weight:600">${p.name}</div><div style="font-size:10px;color:var(--text3)">${p.team} · ${p.p90.toFixed(2)} cards/90</div></div>`;
+        h+=`${rbadge(p.risk,p.rc)}`;
+        h+=`</div>`;
+      });
+      h+=`</div>`;
+    }
+
+    // Referee spotlight
+    const refNames=Object.keys(S.refCache);
+    if(refNames.length){
+      const strictest=refNames.reduce((best,rn)=>{
+        const rs=S.refCache[rn];
+        if(rs&&(rs.strict||0)>(best.strict||0))return{name:rn,...rs};
+        return best;
+      },{strict:0});
+      if(strictest.name){
+        h+=`<div style="padding:6px 0;border-top:1px solid var(--divider);margin-top:4px"><div style="font-size:11px;font-weight:700">🏁 Ref Spotlight: ${strictest.name}</div><div style="font-size:10px;color:var(--text3)">Strictness: ${strictest.strict}/100 · Cards/game: ${strictest.cpg?.toFixed(1)||'—'}</div></div>`;
+      }
+    }
+
+    h+=`<button class="share-btn" style="margin-top:8px;width:100%;justify-content:center" onclick="shareWeekendPreview()">📤 Share Preview</button>`;
+    h+=`</div>`;
+  }catch(e){}
+  return h;
+}
+
+function shareWeekendPreview(){
+  const effLeague=S.league===0?39:S.league;
+  const lgName=LEAGUES.find(l=>l.id===effLeague)?.name||'Football';
+  let text=`⚽ BAProTips Weekend Preview — ${lgName}\n\n`;
+  text+=`📅 ${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}\n\n`;
+  text+=`🔥 Top Booking Picks:\n`;
+  // Use cached player data
+  try{
+    const yl=S.cache[Object.keys(S.cache).find(k=>k.includes('topyellowcards'))];
+    if(yl&&yl.d){
+      const players=yl.d.map(toP).filter(Boolean).sort((a,b)=>b.p90-a.p90).filter(p=>p.apps>=5).slice(0,3);
+      players.forEach((p,i)=>{text+=`${i+1}. ${p.name} (${p.team}) — ${p.p90.toFixed(2)}/90\n`});
+    }
+  }catch(e){}
+  text+=`\n18+ Gamble responsibly · GambleAware.org`;
+  navigator.clipboard.writeText(text).then(()=>{
+    const toast=document.getElementById('copy-toast');
+    if(toast){toast.textContent='Weekend preview copied!';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2000)}
+  }).catch(()=>{});
 }
 function openModal(id){document.getElementById('modal-'+id).classList.add('open')}
 function closeModal(id){document.getElementById('modal-'+id).classList.remove('open')}
@@ -2087,16 +2413,19 @@ let _lastTVHtml='';
 async function reRenderTV(){
   const tvHtml=await buildTVGuide();
   _lastTVHtml=tvHtml;
-  // Find and replace TV section in dashboard
-  const el=document.getElementById('page-dashboard');
-  if(!el) return;
-  const marker='<!-- TV_GUIDE -->';
-  const endMarker='<!-- /TV_GUIDE -->';
-  const cur=el.innerHTML;
-  const si=cur.indexOf(marker);
-  const ei=cur.indexOf(endMarker);
-  if(si>=0&&ei>=0){
-    el.innerHTML=cur.substring(0,si)+marker+tvHtml+endMarker+cur.substring(ei+endMarker.length);
+  // Find and replace TV section in home or dashboard
+  const targets=['page-home','page-dashboard'];
+  for(const tid of targets){
+    const el=document.getElementById(tid);
+    if(!el) continue;
+    const marker='<!-- TV_GUIDE -->';
+    const endMarker='<!-- /TV_GUIDE -->';
+    const cur=el.innerHTML;
+    const si=cur.indexOf(marker);
+    const ei=cur.indexOf(endMarker);
+    if(si>=0&&ei>=0){
+      el.innerHTML=cur.substring(0,si)+marker+tvHtml+endMarker+cur.substring(ei+endMarker.length);
+    }
   }
 }
 
@@ -3068,7 +3397,8 @@ function renderSettings(){
   let h=`<div class="pg-title">&#x2699;&#xFE0F; Settings</div>`;
 
   // Appearance section
-  h+=`<div class="settings-section">${ssHdr('appearance','&#x1F3A8;','Appearance')}<div class="settings-section-body ${ssBody('appearance')}" style="padding:12px 16px"><div style="display:flex;gap:8px"><button class="btn-p btn-pop" style="${curTheme==='dark'?'':'background:var(--card2);color:var(--text2)'};flex:1" onclick="setTheme('dark')">&#x1F319; Dark</button><button class="btn-p btn-pop" style="${curTheme==='light'?'':'background:var(--card2);color:var(--text2)'};flex:1" onclick="setTheme('light')">&#x2600;&#xFE0F; Light</button></div></div></div>`;
+  const _cbMode=localStorage.getItem('ba_colorblind')==='true';
+  h+=`<div class="settings-section">${ssHdr('appearance','&#x1F3A8;','Appearance')}<div class="settings-section-body ${ssBody('appearance')}" style="padding:12px 16px"><div style="display:flex;gap:8px;margin-bottom:10px"><button class="btn-p btn-pop" style="${curTheme==='dark'?'':'background:var(--card2);color:var(--text2)'};flex:1" onclick="setTheme('dark')">&#x1F319; Dark</button><button class="btn-p btn-pop" style="${curTheme==='light'?'':'background:var(--card2);color:var(--text2)'};flex:1" onclick="setTheme('light')">&#x2600;&#xFE0F; Light</button></div><div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--divider)"><div><div style="font-size:12px;font-weight:600">Colour-blind mode</div><div style="font-size:10px;color:var(--text3)">Adds patterns to red/green states</div></div><button class="btn-p btn-pop" style="font-size:11px;padding:6px 16px;${_cbMode?'background:var(--green)':''}" onclick="toggleColourBlind()">${_cbMode?'ON':'OFF'}</button></div></div></div>`;
 
   // API Keys section
   h+=`<div class="settings-section">${ssHdr('apikeys','&#x1F511;','API Keys')}<div class="settings-section-body ${ssBody('apikeys')}"><div style="padding:0 16px 14px"><div style="font-size:14px;font-weight:700;margin-bottom:6px">&#x1F511; API Key</div><div style="font-size:11px;color:var(--text3);margin-bottom:8px">API-Football Pro key from api-sports.io</div><input class="sinput" id="apikey-in" type="password" placeholder="x-apisports-key" value="${S.apiKey}"><div style="display:flex;align-items:center;gap:8px;margin-top:8px"><button class="btn-p" onclick="saveKey()">Save Key</button><button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px" onclick="document.getElementById('apikey-in').type=document.getElementById('apikey-in').type==='password'?'text':'password'">👁</button><span id="save-ok" style="font-size:11px;color:var(--green);display:none">✓ Saved</span></div><div style="display:flex;align-items:center;gap:5px;margin-top:8px"><span class="sdot" style="background:${S.apiKey?'var(--green)':'var(--red)'}"></span><span style="font-size:11px;color:var(--text2)">${S.apiKey?'Key configured':'No key set'}</span></div></div>`;
@@ -3865,7 +4195,7 @@ function saveOnboardKey(){
   const key=document.getElementById('onboard-key')?.value?.trim();
   if(key){S.apiKey=key;localStorage.setItem('ba_key',key)}
   dismissOnboard();
-  if(key) go('dashboard');
+  if(key) go('home');
 }
 function dismissOnboard(){
   localStorage.setItem('ba_onboarded','1');
@@ -5388,30 +5718,26 @@ function setTheme(theme){
 }
 function toggleTheme(){const cur=document.documentElement.getAttribute('data-theme');setTheme(cur==='light'?'dark':'light')}
 function initTheme(){const saved=localStorage.getItem('ba_theme');if(saved==='light')setTheme('light');else setTheme('dark')}
+function toggleColourBlind(){
+  const cur=localStorage.getItem('ba_colorblind')==='true';
+  localStorage.setItem('ba_colorblind',cur?'false':'true');
+  document.documentElement.setAttribute('data-cb',cur?'false':'true');
+  if(S.tab==='more'&&_moreSubPage==='settings')renderSettingsInMore();
+  else if(S.tab==='settings')renderSettings();
+}
+function initColourBlind(){if(localStorage.getItem('ba_colorblind')==='true')document.documentElement.setAttribute('data-cb','true')}
 
 // ---- Init ----
 initTheme();
+initColourBlind();
 buildNav();
 showOnboarding();
-if(!S.apiKey) go('settings'); else go('dashboard');
+if(!S.apiKey){go('more');setTimeout(()=>openMoreSub('settings'),100)} else go('home');
 checkPredAccuracy().catch(()=>{});
 // Supabase sync on load (non-blocking)
 setTimeout(()=>{initSupabase();fullSupabaseSync().catch(()=>{})},1000);
 
-// FIX 1: Nav scroll indicator
-(function(){
-  const navRow=document.getElementById('nav-row');
-  if(navRow){
-    function checkScroll(){
-      const atEnd=navRow.scrollLeft+navRow.clientWidth>=navRow.scrollWidth-5;
-      navRow.classList.toggle('scrolled-end',atEnd);
-    }
-    navRow.addEventListener('scroll',checkScroll,{passive:true});
-    setTimeout(checkScroll,200);
-    const observer=new MutationObserver(()=>setTimeout(checkScroll,50));
-    observer.observe(navRow,{childList:true});
-  }
-})();
+// FIX 1: Nav scroll indicator (disabled — 5 fixed tabs, no scrolling)
 
 // FIX 8: Swipe-to-dismiss modals
 setTimeout(initSwipeDismiss,500);
