@@ -1,0 +1,1002 @@
+{
+ "_meta": {
+  "source": "pl-bookings pl_data.js (ScoutingStats 2025-26 form, 2026-27 PL clubs)",
+  "generated": "2026-07-12",
+  "leagueAvgYpg": 3.74,
+  "caMedian": 1.84
+ },
+ "clubs": {
+  "Tottenham Hotspur": {
+   "ca": 2.63,
+   "fm": 12.2,
+   "basis": "PL"
+  },
+  "Chelsea": {
+   "ca": 2.5,
+   "fm": 11.2,
+   "basis": "PL"
+  },
+  "AFC Bournemouth": {
+   "ca": 2.32,
+   "fm": 12.1,
+   "basis": "PL"
+  },
+  "Brighton & Hove Albion": {
+   "ca": 2.26,
+   "fm": 12,
+   "basis": "PL"
+  },
+  "Sunderland": {
+   "ca": 2.21,
+   "fm": 10.9,
+   "basis": "PL"
+  },
+  "Fulham": {
+   "ca": 1.97,
+   "fm": 11,
+   "basis": "PL"
+  },
+  "Crystal Palace": {
+   "ca": 1.97,
+   "fm": 10.5,
+   "basis": "PL"
+  },
+  "Everton": {
+   "ca": 1.89,
+   "fm": 10.8,
+   "basis": "PL"
+  },
+  "Brentford": {
+   "ca": 1.84,
+   "fm": 10.3,
+   "basis": "PL"
+  },
+  "Manchester City": {
+   "ca": 1.74,
+   "fm": 9.7,
+   "basis": "PL"
+  },
+  "Newcastle United": {
+   "ca": 1.71,
+   "fm": 10.2,
+   "basis": "PL"
+  },
+  "Manchester United": {
+   "ca": 1.66,
+   "fm": 10.3,
+   "basis": "PL"
+  },
+  "Leeds United": {
+   "ca": 1.66,
+   "fm": 10.5,
+   "basis": "PL"
+  },
+  "Nottingham Forest": {
+   "ca": 1.58,
+   "fm": 10.7,
+   "basis": "PL"
+  },
+  "Aston Villa": {
+   "ca": 1.55,
+   "fm": 10,
+   "basis": "PL"
+  },
+  "Liverpool": {
+   "ca": 1.5,
+   "fm": 10.2,
+   "basis": "PL"
+  },
+  "Arsenal": {
+   "ca": 1.32,
+   "fm": 10.3,
+   "basis": "PL"
+  },
+  "Hull City": {
+   "ca": null,
+   "fm": null,
+   "basis": "EFL"
+  },
+  "Coventry City": {
+   "ca": null,
+   "fm": null,
+   "basis": "EFL"
+  },
+  "Ipswich Town": {
+   "ca": null,
+   "fm": null,
+   "basis": "EFL"
+  }
+ },
+ "refs": {
+  "Stuart Attwell": {
+   "ypg": 4.7,
+   "red": 0.1
+  },
+  "Darren England": {
+   "ypg": 4.32,
+   "red": null
+  },
+  "Robert Jones": {
+   "ypg": 4.2,
+   "red": null
+  },
+  "Anthony Taylor": {
+   "ypg": 4,
+   "red": 0.08
+  },
+  "Thomas Bramall": {
+   "ypg": 4,
+   "red": 0.06
+  },
+  "Peter Bankes": {
+   "ypg": 3.91,
+   "red": 0.09
+  },
+  "Chris Kavanagh": {
+   "ypg": 3.74,
+   "red": 0.09
+  },
+  "Jarred Gillett": {
+   "ypg": 3.67,
+   "red": 0.06
+  },
+  "Samuel Barrott": {
+   "ypg": 3.58,
+   "red": 0.05
+  },
+  "Tony Harrington": {
+   "ypg": 3.3,
+   "red": null
+  },
+  "Michael Oliver": {
+   "ypg": 2.91,
+   "red": 0.04
+  },
+  "Craig Pawson": {
+   "ypg": 2.5,
+   "red": null
+  }
+ },
+ "players": {
+  "Tottenham Hotspur": [
+   {
+    "n": "Lucas Bergvall",
+    "p": "MF",
+    "y": 0.185,
+    "f": 2.22,
+    "r": 2.59,
+    "min": 974
+   },
+   {
+    "n": "Randal Kolo Muani",
+    "p": "FW",
+    "y": 0.162,
+    "f": 2.21,
+    "r": 2.534,
+    "min": 1671
+   },
+   {
+    "n": "Cristian Romero",
+    "p": "DF",
+    "y": 0.48,
+    "f": 1.54,
+    "r": 2.5,
+    "min": 1876
+   },
+   {
+    "n": "Pape Matar Sarr",
+    "p": "MF",
+    "y": 0.195,
+    "f": 1.88,
+    "r": 2.27,
+    "min": 1388
+   },
+   {
+    "n": "Kevin Danso",
+    "p": "DF",
+    "y": 0.48,
+    "f": 1.26,
+    "r": 2.22,
+    "min": 1500
+   }
+  ],
+  "Chelsea": [
+   {
+    "n": "Liam Delap",
+    "p": "FW",
+    "y": 0.327,
+    "f": 2.05,
+    "r": 2.704,
+    "min": 1100
+   },
+   {
+    "n": "Moisés Caicedo",
+    "p": "MF",
+    "y": 0.353,
+    "f": 1.7,
+    "r": 2.406,
+    "min": 2801
+   },
+   {
+    "n": "Jorrel Hato",
+    "p": "DF",
+    "y": 0.551,
+    "f": 1.26,
+    "r": 2.362,
+    "min": 1144
+   },
+   {
+    "n": "Wesley Fofana",
+    "p": "DF",
+    "y": 0.365,
+    "f": 1.41,
+    "r": 2.14,
+    "min": 1727
+   },
+   {
+    "n": "Marc Cucurella",
+    "p": "DF",
+    "y": 0.266,
+    "f": 1.53,
+    "r": 2.062,
+    "min": 2709
+   }
+  ],
+  "AFC Bournemouth": [
+   {
+    "n": "Amine Adli",
+    "p": "FW",
+    "y": 0.166,
+    "f": 2.41,
+    "r": 2.742,
+    "min": 1083
+   },
+   {
+    "n": "Justin Kluivert",
+    "p": "MF",
+    "y": 0.473,
+    "f": 1.7,
+    "r": 2.646,
+    "min": 952
+   },
+   {
+    "n": "Tyler Adams",
+    "p": "MF",
+    "y": 0.404,
+    "f": 1.82,
+    "r": 2.628,
+    "min": 1780
+   },
+   {
+    "n": "Antoine Semenyo",
+    "p": "FW",
+    "y": 0.3,
+    "f": 1.85,
+    "r": 2.45,
+    "min": 1800
+   },
+   {
+    "n": "Álex Jiménez",
+    "p": "DF",
+    "y": 0.387,
+    "f": 1.35,
+    "r": 2.124,
+    "min": 2327
+   }
+  ],
+  "Brighton & Hove Albion": [
+   {
+    "n": "Diego Gómez",
+    "p": "MF",
+    "y": 0.379,
+    "f": 2.06,
+    "r": 2.818,
+    "min": 2139
+   },
+   {
+    "n": "Carlos Baleba",
+    "p": "MF",
+    "y": 0.27,
+    "f": 1.68,
+    "r": 2.22,
+    "min": 1665
+   },
+   {
+    "n": "Mats Wieffer",
+    "p": "DF",
+    "y": 0.377,
+    "f": 1.41,
+    "r": 2.164,
+    "min": 1909
+   },
+   {
+    "n": "Kaoru Mitoma",
+    "p": "FW",
+    "y": 0.261,
+    "f": 1.62,
+    "r": 2.142,
+    "min": 1723
+   },
+   {
+    "n": "Joël Veltman",
+    "p": "DF",
+    "y": 0.429,
+    "f": 0.86,
+    "r": 1.718,
+    "min": 1048
+   }
+  ],
+  "Sunderland": [
+   {
+    "n": "Reinildo Mandava",
+    "p": "DF",
+    "y": 0.32,
+    "f": 1.46,
+    "r": 2.1,
+    "min": 1969
+   },
+   {
+    "n": "Brian Brobbey",
+    "p": "FW",
+    "y": 0.279,
+    "f": 1.54,
+    "r": 2.098,
+    "min": 1934
+   },
+   {
+    "n": "Habib Diarra",
+    "p": "MF",
+    "y": 0.384,
+    "f": 1.21,
+    "r": 1.978,
+    "min": 1408
+   },
+   {
+    "n": "Dan Ballard",
+    "p": "DF",
+    "y": 0.168,
+    "f": 1.22,
+    "r": 1.556,
+    "min": 2148
+   },
+   {
+    "n": "Noah Sadiki",
+    "p": "MF",
+    "y": 0.28,
+    "f": 0.96,
+    "r": 1.52,
+    "min": 2896
+   }
+  ],
+  "Fulham": [
+   {
+    "n": "Saša Lukić",
+    "p": "MF",
+    "y": 0.467,
+    "f": 2.75,
+    "r": 3.684,
+    "min": 1735
+   },
+   {
+    "n": "Raúl Jiménez",
+    "p": "FW",
+    "y": 0.205,
+    "f": 1.88,
+    "r": 2.29,
+    "min": 2199
+   },
+   {
+    "n": "Rodrigo Muniz",
+    "p": "FW",
+    "y": 0.181,
+    "f": 1.9,
+    "r": 2.262,
+    "min": 997
+   },
+   {
+    "n": "Jorge Cuenca",
+    "p": "DF",
+    "y": 0.575,
+    "f": 0.96,
+    "r": 2.11,
+    "min": 939
+   },
+   {
+    "n": "Kenny Tete",
+    "p": "DF",
+    "y": 0.1,
+    "f": 1.35,
+    "r": 1.55,
+    "min": 1796
+   }
+  ],
+  "Crystal Palace": [
+   {
+    "n": "Jørgen Strand Larsen",
+    "p": "FW",
+    "y": 0.198,
+    "f": 2.07,
+    "r": 2.466,
+    "min": 911
+   },
+   {
+    "n": "Will Hughes",
+    "p": "MF",
+    "y": 0.401,
+    "f": 1.43,
+    "r": 2.232,
+    "min": 1571
+   },
+   {
+    "n": "Brennan Johnson",
+    "p": "FW",
+    "y": 0.323,
+    "f": 1.45,
+    "r": 2.096,
+    "min": 1116
+   },
+   {
+    "n": "Jefferson Lerma",
+    "p": "MF",
+    "y": 0.365,
+    "f": 1.31,
+    "r": 2.04,
+    "min": 1724
+   },
+   {
+    "n": "Daniel Muñoz",
+    "p": "DF",
+    "y": 0.262,
+    "f": 1.27,
+    "r": 1.794,
+    "min": 2406
+   }
+  ],
+  "Everton": [
+   {
+    "n": "Tim Iroegbunam",
+    "p": "MF",
+    "y": 0.545,
+    "f": 1.76,
+    "r": 2.85,
+    "min": 1487
+   },
+   {
+    "n": "Thierno Barry",
+    "p": "FW",
+    "y": 0.141,
+    "f": 2.21,
+    "r": 2.492,
+    "min": 1915
+   },
+   {
+    "n": "Beto",
+    "p": "FW",
+    "y": 0.173,
+    "f": 1.84,
+    "r": 2.186,
+    "min": 1564
+   },
+   {
+    "n": "James Garner",
+    "p": "MF",
+    "y": 0.316,
+    "f": 1.03,
+    "r": 1.662,
+    "min": 3414
+   },
+   {
+    "n": "Kiernan Dewsbury-Hall",
+    "p": "MF",
+    "y": 0.205,
+    "f": 1.09,
+    "r": 1.5,
+    "min": 2636
+   }
+  ],
+  "Brentford": [
+   {
+    "n": "Igor Thiago",
+    "p": "FW",
+    "y": 0.192,
+    "f": 2.03,
+    "r": 2.414,
+    "min": 3287
+   },
+   {
+    "n": "Vitaly Janelt",
+    "p": "MF",
+    "y": 0.5,
+    "f": 1.25,
+    "r": 2.25,
+    "min": 1439
+   },
+   {
+    "n": "Kevin Schade",
+    "p": "FW",
+    "y": 0.196,
+    "f": 1.67,
+    "r": 2.062,
+    "min": 2756
+   },
+   {
+    "n": "Yegor Yarmolyuk",
+    "p": "MF",
+    "y": 0.236,
+    "f": 1.25,
+    "r": 1.722,
+    "min": 2665
+   },
+   {
+    "n": "Kristoffer Ajer",
+    "p": "DF",
+    "y": 0.199,
+    "f": 1.14,
+    "r": 1.538,
+    "min": 1811
+   }
+  ],
+  "Manchester City": [
+   {
+    "n": "Nico González",
+    "p": "MF",
+    "y": 0.344,
+    "f": 1.72,
+    "r": 2.408,
+    "min": 1568
+   },
+   {
+    "n": "Rayan Aït-Nouri",
+    "p": "DF",
+    "y": 0.184,
+    "f": 1.57,
+    "r": 1.938,
+    "min": 976
+   },
+   {
+    "n": "Nico O'Reilly",
+    "p": "DF",
+    "y": 0.17,
+    "f": 1.53,
+    "r": 1.87,
+    "min": 2648
+   },
+   {
+    "n": "Bernardo Silva",
+    "p": "MF",
+    "y": 0.28,
+    "f": 1.12,
+    "r": 1.68,
+    "min": 2888
+   },
+   {
+    "n": "Josko Gvardiol",
+    "p": "DF",
+    "y": 0.131,
+    "f": 1.05,
+    "r": 1.312,
+    "min": 1374
+   }
+  ],
+  "Newcastle United": [
+   {
+    "n": "Joelinton",
+    "p": "MF",
+    "y": 0.414,
+    "f": 2.12,
+    "r": 2.948,
+    "min": 1957
+   },
+   {
+    "n": "Dan Burn",
+    "p": "DF",
+    "y": 0.409,
+    "f": 1.51,
+    "r": 2.328,
+    "min": 2199
+   },
+   {
+    "n": "Bruno Guimarães",
+    "p": "MF",
+    "y": 0.22,
+    "f": 1.65,
+    "r": 2.09,
+    "min": 2459
+   },
+   {
+    "n": "Joe Willock",
+    "p": "MF",
+    "y": 0.276,
+    "f": 1.47,
+    "r": 2.022,
+    "min": 979
+   },
+   {
+    "n": "Kieran Trippier",
+    "p": "DF",
+    "y": 0.17,
+    "f": 1.19,
+    "r": 1.53,
+    "min": 1591
+   }
+  ],
+  "Manchester United": [
+   {
+    "n": "Casemiro",
+    "p": "MF",
+    "y": 0.348,
+    "f": 1.63,
+    "r": 2.326,
+    "min": 2589
+   },
+   {
+    "n": "Patrick Dorgu",
+    "p": "DF",
+    "y": 0.31,
+    "f": 1.43,
+    "r": 2.05,
+    "min": 1452
+   },
+   {
+    "n": "Luke Shaw",
+    "p": "DF",
+    "y": 0.251,
+    "f": 1.36,
+    "r": 1.862,
+    "min": 3233
+   },
+   {
+    "n": "Mason Mount",
+    "p": "MF",
+    "y": 0.177,
+    "f": 1.5,
+    "r": 1.854,
+    "min": 1018
+   },
+   {
+    "n": "Noussair Mazraoui",
+    "p": "DF",
+    "y": 0.274,
+    "f": 1.1,
+    "r": 1.648,
+    "min": 985
+   }
+  ],
+  "Leeds United": [
+   {
+    "n": "Ethan Ampadu",
+    "p": "MF",
+    "y": 0.288,
+    "f": 1.44,
+    "r": 2.016,
+    "min": 3123
+   },
+   {
+    "n": "Dominic Calvert-Lewin",
+    "p": "FW",
+    "y": 0.099,
+    "f": 1.52,
+    "r": 1.718,
+    "min": 2729
+   },
+   {
+    "n": "Jayden Bogle",
+    "p": "DF",
+    "y": 0.193,
+    "f": 1.25,
+    "r": 1.636,
+    "min": 2805
+   },
+   {
+    "n": "Anton Stach",
+    "p": "MF",
+    "y": 0.114,
+    "f": 1.4,
+    "r": 1.628,
+    "min": 2378
+   },
+   {
+    "n": "Sean Longstaff",
+    "p": "MF",
+    "y": 0.177,
+    "f": 1.15,
+    "r": 1.504,
+    "min": 1017
+   }
+  ],
+  "Nottingham Forest": [
+   {
+    "n": "Ibrahim Sangaré",
+    "p": "MF",
+    "y": 0.216,
+    "f": 1.82,
+    "r": 2.252,
+    "min": 2082
+   },
+   {
+    "n": "Elliot Anderson",
+    "p": "MF",
+    "y": 0.216,
+    "f": 1.54,
+    "r": 1.972,
+    "min": 3334
+   },
+   {
+    "n": "Igor Jesus",
+    "p": "FW",
+    "y": 0.078,
+    "f": 1.63,
+    "r": 1.786,
+    "min": 2315
+   },
+   {
+    "n": "Morato",
+    "p": "DF",
+    "y": 0.334,
+    "f": 1.07,
+    "r": 1.738,
+    "min": 1349
+   },
+   {
+    "n": "Nicolás Domínguez",
+    "p": "MF",
+    "y": 0.228,
+    "f": 1.22,
+    "r": 1.676,
+    "min": 1182
+   }
+  ],
+  "Aston Villa": [
+   {
+    "n": "Emiliano Buendía",
+    "p": "MF",
+    "y": 0.306,
+    "f": 2.09,
+    "r": 2.702,
+    "min": 1766
+   },
+   {
+    "n": "Lamare Bogarde",
+    "p": "MF",
+    "y": 0.429,
+    "f": 1.46,
+    "r": 2.318,
+    "min": 1048
+   },
+   {
+    "n": "Matty Cash",
+    "p": "DF",
+    "y": 0.268,
+    "f": 1.25,
+    "r": 1.786,
+    "min": 3022
+   },
+   {
+    "n": "John McGinn",
+    "p": "MF",
+    "y": 0.209,
+    "f": 1.34,
+    "r": 1.758,
+    "min": 2156
+   },
+   {
+    "n": "Morgan Rogers",
+    "p": "MF",
+    "y": 0.219,
+    "f": 1.26,
+    "r": 1.698,
+    "min": 3285
+   }
+  ],
+  "Liverpool": [
+   {
+    "n": "Conor Bradley",
+    "p": "DF",
+    "y": 0.481,
+    "f": 1.73,
+    "r": 2.692,
+    "min": 935
+   },
+   {
+    "n": "Alexis Mac Allister",
+    "p": "MF",
+    "y": 0.236,
+    "f": 1.18,
+    "r": 1.652,
+    "min": 2664
+   },
+   {
+    "n": "Dominik Szoboszlai",
+    "p": "MF",
+    "y": 0.223,
+    "f": 1.17,
+    "r": 1.616,
+    "min": 3233
+   },
+   {
+    "n": "Cody Gakpo",
+    "p": "FW",
+    "y": 0.098,
+    "f": 1.38,
+    "r": 1.576,
+    "min": 2749
+   },
+   {
+    "n": "Ryan Gravenberch",
+    "p": "MF",
+    "y": 0.15,
+    "f": 1.14,
+    "r": 1.44,
+    "min": 2996
+   }
+  ],
+  "Arsenal": [
+   {
+    "n": "Cristhian Mosquera",
+    "p": "DF",
+    "y": 0.364,
+    "f": 1.55,
+    "r": 2.278,
+    "min": 988
+   },
+   {
+    "n": "Mikel Merino",
+    "p": "MF",
+    "y": 0.088,
+    "f": 1.93,
+    "r": 2.106,
+    "min": 1028
+   },
+   {
+    "n": "Riccardo Calafiori",
+    "p": "DF",
+    "y": 0.263,
+    "f": 1.37,
+    "r": 1.896,
+    "min": 1710
+   },
+   {
+    "n": "Viktor Gyökeres",
+    "p": "FW",
+    "y": 0.202,
+    "f": 1.41,
+    "r": 1.814,
+    "min": 2231
+   },
+   {
+    "n": "Jurriën Timber",
+    "p": "DF",
+    "y": 0.183,
+    "f": 1.39,
+    "r": 1.756,
+    "min": 2456
+   }
+  ],
+  "Hull City": [
+   {
+    "n": "Oliver McBurnie",
+    "p": "FW",
+    "y": 0.227,
+    "f": 1.56,
+    "r": 2.014,
+    "min": 3176
+   },
+   {
+    "n": "Oliver McBurnie",
+    "p": "FW",
+    "y": 0.227,
+    "f": 1.56,
+    "r": 2.014,
+    "min": 3176
+   },
+   {
+    "n": "Oliver McBurnie",
+    "p": "FW",
+    "y": 0.227,
+    "f": 1.56,
+    "r": 2.014,
+    "min": 3176
+   },
+   {
+    "n": "Oliver McBurnie",
+    "p": "FW",
+    "y": 0.227,
+    "f": 1.56,
+    "r": 2.014,
+    "min": 3176
+   },
+   {
+    "n": "Oliver McBurnie",
+    "p": "FW",
+    "y": 0.227,
+    "f": 1.56,
+    "r": 2.014,
+    "min": 3176
+   }
+  ],
+  "Coventry City": [
+   {
+    "n": "Haji Wright",
+    "p": "FW",
+    "y": 0.139,
+    "f": 1.08,
+    "r": 1.358,
+    "min": 2594
+   },
+   {
+    "n": "Haji Wright",
+    "p": "FW",
+    "y": 0.139,
+    "f": 1.08,
+    "r": 1.358,
+    "min": 2594
+   },
+   {
+    "n": "Haji Wright",
+    "p": "FW",
+    "y": 0.139,
+    "f": 1.08,
+    "r": 1.358,
+    "min": 2594
+   },
+   {
+    "n": "Haji Wright",
+    "p": "FW",
+    "y": 0.139,
+    "f": 1.08,
+    "r": 1.358,
+    "min": 2594
+   },
+   {
+    "n": "Haji Wright",
+    "p": "FW",
+    "y": 0.139,
+    "f": 1.08,
+    "r": 1.358,
+    "min": 2594
+   }
+  ],
+  "Ipswich Town": [
+   {
+    "n": "Jack Clarke",
+    "p": "FW",
+    "y": 0.151,
+    "f": 1.51,
+    "r": 1.812,
+    "min": 2380
+   },
+   {
+    "n": "Jack Clarke",
+    "p": "FW",
+    "y": 0.151,
+    "f": 1.51,
+    "r": 1.812,
+    "min": 2380
+   },
+   {
+    "n": "Jack Clarke",
+    "p": "FW",
+    "y": 0.151,
+    "f": 1.51,
+    "r": 1.812,
+    "min": 2380
+   },
+   {
+    "n": "Jack Clarke",
+    "p": "FW",
+    "y": 0.151,
+    "f": 1.51,
+    "r": 1.812,
+    "min": 2380
+   },
+   {
+    "n": "Jack Clarke",
+    "p": "FW",
+    "y": 0.151,
+    "f": 1.51,
+    "r": 1.812,
+    "min": 2380
+   }
+  ]
+ }
+}

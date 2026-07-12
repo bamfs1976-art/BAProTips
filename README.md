@@ -18,14 +18,16 @@ Tips are no longer free-form AI guesses. Since v2 the pipeline is:
    - Claude then only **selects** from model-approved candidates and writes rationales — it cannot invent selections, probabilities or odds. If the AI call fails, a deterministic fallback publishes the top candidates by edge, so tip generation never goes dark.
    - Confidence is mechanical: model probability ≥65% = High, ≥52% = Medium, else Low.
 
+   - **Card-market tips for Premier League fixtures** (the app's speciality): Total Cards over/under and Player Carded candidates from the [pl-bookings](https://github.com/bamfs1976-art/pl-bookings) discipline dataset — club cards-against rates, referee yellows-per-game, and per-player booking risk (`yellows/90 × 2 + fouls/90`). Expected cards scale with the assigned referee; card candidates hold reserved slots so they aren't crowded out by goals markets. Dataset snapshot lives in `netlify/functions/lib/booking-data.json` (rebuild from pl-bookings' `data/build_pl_data.py` when new season form lands).
+
 2. **`settle-tips-scheduled`** (23:30 UTC daily)
-   - v2 tips store structured `market` / `pick` / `line` fields and the API-Football `fixture_id`, so settlement is **deterministic** (no parsing of AI-written selection strings) and results are **batch-fetched 20 fixtures per call**.
+   - v2 tips store structured `market` / `pick` / `line` fields and the API-Football `fixture_id`, so settlement is **deterministic** (no parsing of AI-written selection strings) and results are **batch-fetched 20 fixtures per call**. Card markets settle from fixture events (each card event counts one card; player matching is fuzzy against abbreviated event names).
    - Stats now include **ROI and profit in units** (flat 1-unit stakes on every tip that had odds attached) alongside win rate — because win rate alone can't tell you if the tips make money.
 
 ## Deployment
 
 1. Run `supabase-schema.sql` for a fresh project, or `supabase-migration-v2.sql` on an existing one (idempotent — adds the v2 columns). The functions degrade gracefully pre-migration, but new fields won't be stored until it runs.
-2. Set Netlify env vars: `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `API_FOOTBALL_KEY`, `ANTHROPIC_API_KEY` (optional — fallback selection works without it).
+2. Set Netlify env vars: `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `API_FOOTBALL_KEY`, `ANTHROPIC_API_KEY` (optional — fallback selection works without it), `API_FOOTBALL_SEASON` (optional, defaults to 2026 = the 2026-27 European season).
 3. Deploy — schedules are configured in `netlify.toml`.
 
 ## Sibling projects

@@ -15,6 +15,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const fetch = require('node-fetch');
 const model = require('./lib/match-model');
+const booking = require('./lib/booking-model');
 
 // --- Environment ---
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -36,7 +37,9 @@ const ALL_LEAGUES = [
   { id: 40, name: 'Championship' }, { id: 179, name: 'Premiership (Scotland)' },
   { id: 188, name: 'A-League' }
 ];
-const SEASON = 2025;
+// API-Football season year (2026 = the 2026-27 European season).
+// Overridable via env so a new season doesn't need a code change.
+const SEASON = parseInt(process.env.API_FOOTBALL_SEASON || '2026', 10);
 const MAX_SHORTLIST = 12;      // fixtures we fully price + fetch odds for
 const MAX_ODDS_CALLS = 12;
 const MAX_INJURY_CALLS = 8;
@@ -161,6 +164,11 @@ function parseOdds(oddsResponse) {
             const m = String(v.value).match(/(Over|Under)\s+([\d.]+)/i);
             if (m) collect(`OU_${m[2]}`, m[1].toUpperCase(), v.odd);
           }
+        } else if (name.includes('card') && name.includes('over/under')) {
+          for (const v of bet.values || []) {
+            const m = String(v.value).match(/(Over|Under)\s+([\d.]+)/i);
+            if (m) collect(`CARDS_OU_${m[2]}`, m[1].toUpperCase(), v.odd);
+          }
         }
       }
     }
@@ -198,6 +206,8 @@ function attachOdds(cand, odds) {
     priced = odds['BTTS']?.[cand.pick === 'YES' ? 'Yes' : 'No'];
   } else if (cand.market === 'OU') {
     priced = odds[`OU_${cand.line}`]?.[cand.pick];
+  } else if (cand.market === 'CARDS_OU') {
+    priced = odds[`CARDS_OU_${cand.line}`]?.[cand.pick];
   }
   if (priced) {
     cand.odds = Math.round(priced.odds * 100) / 100;
@@ -211,7 +221,7 @@ function attachOdds(cand, odds) {
 // The AI picks candidate ids and writes rationales. All numbers stay
 // server-side, so a hallucinated probability cannot reach the database.
 async function selectTipsWithAI(fixturesPayload) {
-  const systemPrompt = `You are an expert football analyst for a betting tips app. You are given fixtures, recent form, injuries, and a list of CANDIDATE selections. Every candidate was approved by a Poisson/Dixon-Coles statistical model and includes the model probability, and where available the bookmaker odds and the edge versus the market. Your job is ONLY to choose the best candidates and write rationales. You must not invent selections, probabilities or odds — reason only over the data provided. Prefer candidates with positive edge and strong probability, vary bet types, and never pick more than 2 candidates from the same match. Rationales are plain English, max two sentences, and should reference the supporting data (form, model probability, edge, injuries). You do not encourage irresponsible gambling.`;
+  const systemPrompt = `You are an expert football analyst for a betting tips app. You are given fixtures, recent form, injuries, and a list of CANDIDATE selections. Every candidate was approved by a Poisson/Dixon-Coles statistical model and includes the model probability, and where available the bookmaker odds and the edge versus the market. Your job is ONLY to choose the best candidates and write rationales. You must not invent selections, probabilities or odds — reason only over the data provided. Prefer candidates with positive edge and strong probability, vary bet types, and never pick more than 2 candidates from the same match. Card-market candidates (Total Cards, Player Carded) come from a discipline/referee model — their "note" field carries the supporting stats; never select a Player Carded candidate whose player appears in the injuries list. Do not put Player Carded or Correct Score selections in the accumulator. Rationales are plain English, max two sentences, and should reference the supporting data (form, model probability, edge, referee stats, injuries). You do not encourage irresponsible gambling.`;
 
   const userPrompt = `Fixture data with candidates: ${JSON.stringify(fixturesPayload)}
 
@@ -398,6 +408,16 @@ exports.handler = async (event) => {
         const grid = model.scoreGrid(lam.lh, lam.la);
         const mkts = model.markets(grid);
         const cands = model.candidatesForFixture(homeName, awayName, mkts);
+
+        // Booking Analytics Pro speciality: card-market candidates for
+        // PL fixtures, from the pl-bookings discipline/referee dataset.
+        if (lg.id === 39) {
+          try {
+            cands.push(...booking.cardCandidates(homeName, awayName, f.fixture.referee));
+          } catch (e) {
+            console.warn(`[Step 2] Card candidates failed for ${homeName} vs ${awayName}: ${e.message}`);
+          }
+        }
         if (!cands.length) continue;
 
         shortlist.push({
@@ -458,7 +478,7 @@ exports.handler = async (event) => {
     const seenSelections = new Set();
     let candSeq = 0;
     for (const s of shortlist) {
-      const kept = s.candidates
+      const eligible = s.candidates
         .filter(c => c.edge == null || c.edge >= MIN_EDGE)
         .filter(c => {
           const key = `${s.homeName}|${s.awayName}|${c.market}|${c.pick}|${c.line}`;
@@ -466,8 +486,14 @@ exports.handler = async (event) => {
           seenSelections.add(key);
           return true;
         })
-        .sort((a, b) => (b.edge ?? b.prob - 0.5) - (a.edge ?? a.prob - 0.5))
-        .slice(0, 4);
+        .sort((a, b) => (b.edge ?? b.prob - 0.5) - (a.edge ?? a.prob - 0.5));
+      // Card markets get reserved slots — the app's speciality shouldn't
+      // lose the cap race to generic goals markets.
+      const isCard = c => booking.BOOKING_MARKETS.includes(c.market);
+      const kept = [
+        ...eligible.filter(c => !isCard(c)).slice(0, 4),
+        ...eligible.filter(isCard).slice(0, 2)
+      ];
       for (const c of kept) {
         c.id = `c${++candSeq}`;
         c.match = `${s.homeName} vs ${s.awayName}`;
@@ -508,7 +534,8 @@ exports.handler = async (event) => {
         modelProb: round4(c.prob),
         odds: c.odds ?? null,
         impliedProb: round4(c.implied),
-        edge: round4(c.edge)
+        edge: round4(c.edge),
+        note: c.meta || undefined
       }))
     }));
 
@@ -578,6 +605,7 @@ exports.handler = async (event) => {
       const legs = accaSel.ids
         .map(id => byId[id])
         .filter(Boolean)
+        .filter(c => !['PLAYER_CARDED', 'CORRECT_SCORE'].includes(c.market))
         .filter(c => rows.some(r => r.match === c.match && r.market === c.market && r.pick === c.pick))
         .filter((c, i, arr) => arr.findIndex(x => x.match === c.match) === i)
         .slice(0, 5);

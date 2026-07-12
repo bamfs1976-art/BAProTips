@@ -8,6 +8,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const fetch = require('node-fetch');
 const model = require('./lib/match-model');
+const booking = require('./lib/booking-model');
 
 // --- Environment ---
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -55,6 +56,9 @@ function settleBet(tip, homeGoals, awayGoals, events) {
   // no string parsing of AI-written selections needed.
   if (tip.market && tip.market !== 'ACCA') {
     const line = tip.line != null ? parseFloat(tip.line) : null;
+    if (booking.BOOKING_MARKETS.includes(tip.market)) {
+      return { result: booking.settleBooking(tip.market, tip.pick, line, events), score };
+    }
     return { result: model.settleStructured(tip.market, tip.pick, line, hg, ag), score };
   }
 
@@ -285,6 +289,7 @@ exports.handler = async (event) => {
     console.log('[Step 2] Settling individual tips...');
     let settledCount = 0;
     const fixtureCache = {}; // cache fixture lookups by match name
+    const eventsCache = {};  // cache event lookups by fixture id
 
     // v2 tips store their API-Football fixture_id — batch-fetch those
     // results up front (20 ids per call) instead of one date-search per
@@ -354,14 +359,18 @@ exports.handler = async (event) => {
       const hg = fixtureResult.goals?.home ?? 0;
       const ag = fixtureResult.goals?.away ?? 0;
 
-      // Fetch events if needed for goalscorer/first-to-score bets
+      // Fetch events when settlement needs them: card markets (v2) and
+      // legacy goalscorer/first-to-score bets
       let events = null;
       const bt = tip.bet_type.toLowerCase();
-      if (bt.includes('goalscorer') || bt.includes('first team to score')) {
-        if (apiCallCount < MAX_API_CALLS) {
-          events = await apiFootball('/fixtures/events', {
-            fixture: fixtureResult.fixture.id
-          });
+      if (booking.BOOKING_MARKETS.includes(tip.market) ||
+          bt.includes('goalscorer') || bt.includes('first team to score')) {
+        const fid = fixtureResult.fixture.id;
+        if (eventsCache[fid] !== undefined) {
+          events = eventsCache[fid];
+        } else if (apiCallCount < MAX_API_CALLS) {
+          events = await apiFootball('/fixtures/events', { fixture: fid });
+          eventsCache[fid] = events;
         }
       }
 
