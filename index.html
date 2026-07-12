@@ -993,7 +993,13 @@ async function syncTipsFromSupabase(){
       betType:r.bet_type,selection:r.selection,confidence:r.confidence,
       rationale:r.rationale,status:r.status,isAcca:r.is_acca,
       accaLegs:r.acca_legs||[],settledScore:r.settled_score,
-      generatedAt:r.generated_at,settledAt:r.settled_at
+      generatedAt:r.generated_at,settledAt:r.settled_at,
+      market:r.market,pick:r.pick,line:r.line,
+      modelProb:r.model_prob!=null?parseFloat(r.model_prob):null,
+      odds:r.odds!=null?parseFloat(r.odds):null,
+      impliedProb:r.implied_prob!=null?parseFloat(r.implied_prob):null,
+      edge:r.edge!=null?parseFloat(r.edge):null,
+      fixtureId:r.fixture_id
     }));
     localStorage.setItem('dailyTips',JSON.stringify(tips));
     console.log(`[Supabase] Synced ${tips.length} tips to localStorage`);
@@ -1015,7 +1021,10 @@ async function syncStatsFromSupabase(){
       winRateByBetType:r.win_rate_by_bet||{},
       winRateByComp:r.win_rate_by_comp||{},
       accaWinRate:r.acca_win_rate,
-      longestWin:r.longest_win,longestLoss:r.longest_loss
+      longestWin:r.longest_win,longestLoss:r.longest_loss,
+      profitUnits:r.profit_units!=null?parseFloat(r.profit_units):null,
+      roi:r.roi!=null?parseFloat(r.roi):null,
+      pricedCount:r.priced_count
     };
     localStorage.setItem('tipStats',JSON.stringify(stats));
     console.log('[Supabase] Synced stats to localStorage');
@@ -4661,8 +4670,8 @@ function betTip(bt){const key=BET_TIP_MAP[bt.toLowerCase()];return key?tip(key):
 
 // FIX 10: Demo tips
 const DEMO_TIPS=[
-  {id:'demo1',match:'Arsenal vs Chelsea',competition:'Premier League',kickoff:'2026-03-22T15:00:00Z',betType:'BTTS',selection:'Yes',confidence:'High',rationale:'Both teams have scored in each of their last six meetings. Arsenal average 2.1 goals per home game this season.',status:'Won',isAcca:false,accaLegs:[],settledScore:'2-1',generatedAt:Date.now()},
-  {id:'demo2',match:'Real Madrid vs Barcelona',competition:'La Liga',kickoff:'2026-03-22T20:00:00Z',betType:'Over 2.5 Goals',selection:'Over 2.5',confidence:'High',rationale:'El Clasico has produced over 2.5 goals in eight of the last ten meetings. Both sides are in strong attacking form.',status:'Won',isAcca:false,accaLegs:[],settledScore:'3-2',generatedAt:Date.now()},
+  {id:'demo1',match:'Arsenal vs Chelsea',competition:'Premier League',kickoff:'2026-03-22T15:00:00Z',betType:'BTTS',selection:'Yes',confidence:'High',rationale:'Both teams have scored in each of their last six meetings. Arsenal average 2.1 goals per home game this season.',status:'Won',isAcca:false,accaLegs:[],settledScore:'2-1',generatedAt:Date.now(),modelProb:0.66,odds:1.72,impliedProb:0.56,edge:0.10},
+  {id:'demo2',match:'Real Madrid vs Barcelona',competition:'La Liga',kickoff:'2026-03-22T20:00:00Z',betType:'Over 2.5 Goals',selection:'Over 2.5',confidence:'High',rationale:'El Clasico has produced over 2.5 goals in eight of the last ten meetings. Both sides are in strong attacking form.',status:'Won',isAcca:false,accaLegs:[],settledScore:'3-2',generatedAt:Date.now(),modelProb:0.61,odds:1.80,impliedProb:0.535,edge:0.075},
   {id:'demo3',match:'Bayern Munich vs Borussia Dortmund',competition:'Bundesliga',kickoff:'2026-03-22T17:30:00Z',betType:'1X2',selection:'Home Win',confidence:'Medium',rationale:'Bayern have won nine of the last twelve Der Klassiker fixtures at home. Dortmund have key injury concerns in midfield.',status:'Lost',isAcca:false,accaLegs:[],settledScore:'1-2',generatedAt:Date.now()},
   {id:'demo4',match:'PSG vs Marseille',competition:'Ligue 1',kickoff:'2026-03-22T20:45:00Z',betType:'Player Carded',selection:'Home midfielder',confidence:'Medium',rationale:'This fixture averages 4.8 cards per game over the last five seasons. The referee assigned has a strictness score of 78.',status:'Won',isAcca:false,accaLegs:[],settledScore:'2-0',generatedAt:Date.now()},
   {id:'demo5',match:'Liverpool vs Manchester City',competition:'Premier League',kickoff:'2026-03-22T16:30:00Z',betType:'Correct Score',selection:'1-1',confidence:'Low',rationale:'This fixture has ended level in three of the last five meetings. Both teams are likely to be cautious in a title-race context.',status:'Won',isAcca:false,accaLegs:[],settledScore:'1-1',generatedAt:Date.now()}
@@ -4684,7 +4693,7 @@ function renderTipsPublic(el){
   h+=`<div id="trial-status-panel"></div>`;
 
   // Performance banner
-  h+=`<div class="card" style="padding:12px"><div style="display:flex;justify-content:space-around;text-align:center"><div><div style="font-size:10px;color:var(--text3);text-transform:uppercase">Win Rate</div><div style="font-size:20px;font-weight:800;color:var(--role-win)">${stats?.winRate?stats.winRate+'%':'—'}</div></div><div style="width:1px;background:var(--divider)"></div><div><div style="font-size:10px;color:var(--text3);text-transform:uppercase">Won This Week</div><div style="font-size:20px;font-weight:800;color:var(--role-cta)">${stats?.wonThisWeek??'—'}</div></div><div style="width:1px;background:var(--divider)"></div><div><div style="font-size:10px;color:var(--text3);text-transform:uppercase">Streak</div><div style="font-size:20px;font-weight:800;color:${stats?.streakDir==='W'?'var(--role-win)':'var(--red)'}">${stats?.streak??'—'}</div></div></div></div>`;
+  h+=`<div class="card" style="padding:12px"><div style="display:flex;justify-content:space-around;text-align:center"><div><div style="font-size:10px;color:var(--text3);text-transform:uppercase">Win Rate</div><div style="font-size:20px;font-weight:800;color:var(--role-win)">${stats?.winRate?stats.winRate+'%':'—'}</div></div><div style="width:1px;background:var(--divider)"></div><div><div style="font-size:10px;color:var(--text3);text-transform:uppercase">ROI</div><div style="font-size:20px;font-weight:800;color:${(stats?.roi??0)>=0?'var(--role-win)':'var(--red)'}" title="Flat 1-unit stakes on tips with odds attached${stats?.pricedCount?` (${stats.pricedCount} priced tips)`:''}">${stats?.roi!=null&&stats?.pricedCount?stats.roi.toFixed(1)+'%':'—'}</div></div><div style="width:1px;background:var(--divider)"></div><div><div style="font-size:10px;color:var(--text3);text-transform:uppercase">Won This Week</div><div style="font-size:20px;font-weight:800;color:var(--role-cta)">${stats?.wonThisWeek??'—'}</div></div><div style="width:1px;background:var(--divider)"></div><div><div style="font-size:10px;color:var(--text3);text-transform:uppercase">Streak</div><div style="font-size:20px;font-weight:800;color:${stats?.streakDir==='W'?'var(--role-win)':'var(--red)'}">${stats?.streak??'—'}</div></div></div></div>`;
 
   // Async: load trial status panel
   fetchTrialStatus().then(ts=>{
@@ -4738,6 +4747,16 @@ function renderTipCards(tips,isDemo){
       h+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:13px;font-weight:700">${t.match}</span><span class="rbadge" style="color:${statCol};background:${statBg}">${t.status}${t.settledScore?' · '+t.settledScore:''}</span></div>`;
       h+=`<div style="font-size:10px;color:var(--text3);margin-bottom:6px">${stime(t.kickoff)} ${sdate(t.kickoff)} · ${t.competition}</div>`;
       h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span class="rbadge" style="color:var(--role-info);background:rgba(102,153,255,.1)">${t.betType}</span>${betTip(t.betType)}<span style="font-size:13px;font-weight:600">${t.selection}</span><span class="rbadge" style="color:${confCol};background:${confCol}15">${t.confidence}</span></div>`;
+      if(t.modelProb!=null){
+        let valueBadge='';
+        if(t.edge!=null){
+          const ePct=(t.edge*100).toFixed(0);
+          if(t.edge>=0.10) valueBadge=`<span class="rbadge" style="color:var(--role-win);background:rgba(51,217,106,.12)">🔥 +${ePct}% edge</span>`;
+          else if(t.edge>=0.03) valueBadge=`<span class="rbadge" style="color:var(--role-cta);background:rgba(255,215,0,.1)">✓ +${ePct}% edge</span>`;
+          else valueBadge=`<span class="rbadge" style="color:var(--text3);background:rgba(85,85,85,.1)">${ePct>=0?'+':''}${ePct}% edge</span>`;
+        }
+        h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:10px;color:var(--text3)"><span>Model <strong style="color:var(--text2)">${(t.modelProb*100).toFixed(0)}%</strong></span>${t.odds?`<span>Odds <strong style="color:var(--text2)">${t.odds.toFixed(2)}</strong>${t.impliedProb!=null?` (${(t.impliedProb*100).toFixed(0)}%)`:''}</span>`:''}${valueBadge}</div>`;
+      }
       h+=`<div style="font-size:11px;color:var(--text2);line-height:1.4">${t.rationale}</div>`;
       if(t.isAcca&&t.accaLegs?.length){
         h+=`<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--divider);font-size:10px;color:var(--text3)"><div style="font-weight:600;margin-bottom:3px">Acca Legs:</div>`;

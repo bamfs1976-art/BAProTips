@@ -26,6 +26,15 @@ create table if not exists daily_tips (
   settled_score text,                          -- "2-1"
   generated_at  bigint not null,               -- epoch ms
   settled_at    bigint,                        -- epoch ms
+  -- v2: structured market fields + model/odds data (see supabase-migration-v2.sql)
+  market        text,                          -- '1X2','BTTS','OU','CLEAN_SHEET','WIN_TO_NIL','CORRECT_SCORE','ACCA'
+  pick          text,                          -- 'HOME','AWAY','DRAW','YES','NO','OVER','UNDER','2-1',...
+  line          numeric(4,1),                  -- e.g. 2.5 for Over/Under
+  model_prob    numeric(6,4),                  -- model probability 0-1
+  odds          numeric(8,2),                  -- median decimal odds across bookmakers
+  implied_prob  numeric(6,4),                  -- de-vigged implied probability from odds
+  edge          numeric(6,4),                  -- model_prob - implied_prob
+  fixture_id    bigint,                        -- API-Football fixture id
   created_at    timestamptz default now(),
   updated_at    timestamptz default now()
 );
@@ -34,6 +43,7 @@ create table if not exists daily_tips (
 create index if not exists idx_tips_kickoff on daily_tips (kickoff);
 create index if not exists idx_tips_status on daily_tips (status);
 create index if not exists idx_tips_generated on daily_tips (generated_at);
+create index if not exists idx_tips_fixture on daily_tips (fixture_id);
 
 -- ======================================================================
 --  2. TIP STATS TABLE (aggregate performance)
@@ -54,6 +64,10 @@ create table if not exists tip_stats (
   acca_win_rate      numeric(5,2) default 0,
   longest_win        int default 0,
   longest_loss       int default 0,
+  -- v2: ROI tracking (1-unit flat stakes on priced tips)
+  profit_units       numeric(8,2) default 0,
+  roi                numeric(6,2) default 0,
+  priced_count       int default 0,
   updated_at         timestamptz default now()
 );
 

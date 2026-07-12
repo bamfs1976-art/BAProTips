@@ -7,6 +7,7 @@
 
 const { createClient } = require('@supabase/supabase-js');
 const fetch = require('node-fetch');
+const model = require('./lib/match-model');
 
 // --- Environment ---
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -49,6 +50,14 @@ function settleBet(tip, homeGoals, awayGoals, events) {
   const ag = awayGoals ?? 0;
   const totalGoals = hg + ag;
   const score = `${hg}-${ag}`;
+
+  // v2 tips carry structured market fields — settle deterministically,
+  // no string parsing of AI-written selections needed.
+  if (tip.market && tip.market !== 'ACCA') {
+    const line = tip.line != null ? parseFloat(tip.line) : null;
+    return { result: model.settleStructured(tip.market, tip.pick, line, hg, ag), score };
+  }
+
   const sel = tip.selection.toLowerCase();
   const bt = tip.bet_type.toLowerCase();
   const matchParts = tip.match.split(' vs ');
@@ -186,7 +195,21 @@ function calculateStats(tips) {
     else if (t.status === 'Lost') { cl++; cw = 0; if (cl > longestLoss) longestLoss = cl; }
   });
 
+  // ROI — flat 1-unit stakes on every settled tip that had odds attached
+  let profitUnits = 0, pricedCount = 0;
+  nonVoid.forEach(t => {
+    const odds = t.odds != null ? parseFloat(t.odds) : null;
+    if (!odds || odds <= 1) return;
+    pricedCount++;
+    if (t.status === 'Won') profitUnits += odds - 1;
+    else if (t.status === 'Lost') profitUnits -= 1;
+  });
+  const roi = pricedCount > 0 ? Math.round(profitUnits / pricedCount * 10000) / 100 : 0;
+
   return {
+    profit_units: Math.round(profitUnits * 100) / 100,
+    roi,
+    priced_count: pricedCount,
     total: settled.length,
     won: won.length,
     lost: lost.length,
@@ -263,6 +286,21 @@ exports.handler = async (event) => {
     let settledCount = 0;
     const fixtureCache = {}; // cache fixture lookups by match name
 
+    // v2 tips store their API-Football fixture_id — batch-fetch those
+    // results up front (20 ids per call) instead of one date-search per
+    // match. Tips without fixture_id fall back to the legacy search.
+    const fixtureById = {};
+    const idsToFetch = [...new Set(singleTips.map(t => t.fixture_id).filter(Boolean))];
+    for (let i = 0; i < idsToFetch.length; i += 20) {
+      if (apiCallCount >= MAX_API_CALLS) break;
+      const batch = idsToFetch.slice(i, i + 20);
+      const resp = await apiFootball('/fixtures', { ids: batch.join('-') });
+      (resp || []).forEach(f => { fixtureById[f.fixture.id] = f; });
+    }
+    if (idsToFetch.length) {
+      console.log(`[Step 2] Batch-fetched ${Object.keys(fixtureById).length}/${idsToFetch.length} fixtures by id`);
+    }
+
     for (const tip of singleTips) {
       if (apiCallCount >= MAX_API_CALLS) {
         console.log('[Step 2] API budget exhausted, stopping');
@@ -279,7 +317,7 @@ exports.handler = async (event) => {
       const awayName = matchParts[1].trim();
       const cacheKey = `${homeName}|${awayName}`;
 
-      let fixtureResult = fixtureCache[cacheKey];
+      let fixtureResult = (tip.fixture_id && fixtureById[tip.fixture_id]) || fixtureCache[cacheKey];
 
       if (!fixtureResult) {
         // Search for the fixture by date
@@ -409,12 +447,22 @@ exports.handler = async (event) => {
       const stats = calculateStats(allTipsForStats);
       const today = new Date().toISOString().split('T')[0];
 
-      await supabase.from('tip_stats').upsert({
+      let { error: statsErr } = await supabase.from('tip_stats').upsert({
         stats_date: today,
         ...stats
       }, { onConflict: 'stats_date' });
 
-      console.log(`[Step 4] Stats updated: ${stats.win_rate}% win rate, ${stats.total} settled`);
+      // Pre-migration fallback: retry without the v2 ROI columns
+      if (statsErr && /column/i.test(statsErr.message)) {
+        console.warn('[Step 4] Stats upsert failed on new columns — run supabase-migration-v2.sql. Retrying legacy shape.');
+        const { profit_units, roi, priced_count, ...legacyStats } = stats;
+        ({ error: statsErr } = await supabase.from('tip_stats').upsert({
+          stats_date: today,
+          ...legacyStats
+        }, { onConflict: 'stats_date' }));
+      }
+      if (statsErr) console.error(`[Step 4] Stats upsert failed: ${statsErr.message}`);
+      else console.log(`[Step 4] Stats updated: ${stats.win_rate}% win rate, ${stats.total} settled, ROI ${stats.roi}%`);
     }
 
     // Log success
