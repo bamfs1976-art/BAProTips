@@ -8,6 +8,10 @@
   publish = "."
   functions = "netlify/functions"
 
+[build.environment]
+  # Node 24 LTS, supported to April 2028. Also sets the Functions runtime.
+  NODE_VERSION = "24"
+
 # Serve index.html at root (SPA fallback)
 [[redirects]]
   from = "/*"
